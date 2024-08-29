@@ -417,60 +417,70 @@ function toggleDictation(targetElementId) {
                 transcript = storedCorrection;
             }
 
+            const selectionStart = targetElement.selectionStart;
+            const selectionEnd = targetElement.selectionEnd;
+            const beforeText = targetElement.value.slice(0, selectionStart);
+            const afterText = targetElement.value.slice(selectionEnd);
 
-      const selectionStart = targetElement.selectionStart;
-      const selectionEnd = targetElement.selectionEnd;
-      const beforeText = targetElement.value.slice(0, selectionStart);
-      const afterText = targetElement.value.slice(selectionEnd);
+            // Detectar "punto y aparte" y "punto y seguido"
+            transcript = transcript.replace(/\bpunto y aparte\b/gi, '.\n');
+            transcript = transcript.replace(/\bpunto y seguido\b/gi, '.');
 
-      // Capitalizar la primera letra de la frase, si es necesario
-      if (!beforeText || beforeText.endsWith('. ') || beforeText.endsWith('\n')) {
-        transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
-      } else if (beforeText.endsWith(' ') || beforeText.endsWith(',')) {
-        transcript = transcript.charAt(0).toLowerCase() + transcript.slice(1);
-      } else {
-        transcript = ' ' + transcript.charAt(0).toLowerCase() + transcript.slice(1);
-      }
+            // Eliminar espacios antes de los signos de puntuación
+            transcript = transcript.replace(/\s*([,.])/g, '$1');
 
-      // Reemplazar "Coma" por "," y "punto" por "."
-      transcript = transcript.replace(/\bComa\b/gi, ',');
-      transcript = transcript.replace(/\bpunto\b/gi, '.');
+            // Capitalizar la primera letra después de cada punto y de una nueva línea
+            transcript = transcript.replace(/(?:\.|\n)(\s*\w)/g, (match, p1) => {
+                return '. ' + p1.toUpperCase();
+            });
 
-      // Eliminar espacios antes de los signos de puntuación
-      transcript = transcript.replace(/\s*([,.])/g, '$1');
+            // Si el texto antes de la selección termina con un punto o nueva línea, capitalizar
+            if (beforeText.endsWith('. ') || beforeText.endsWith('\n') || beforeText.trim().endsWith('.')) {
+                transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+            } else if (beforeText.endsWith(' ') || beforeText.endsWith(',')) {
+                transcript = transcript.charAt(0).toLowerCase() + transcript.slice(1);
+            } else {
+                transcript = ' ' + transcript.charAt(0).toLowerCase() + transcript.slice(1);
+            }
 
-      // Capitalizar la primera letra después de cada punto
-      transcript = transcript.replace(/\. (\w)/g, (match, p1) => `. ${p1.toUpperCase()}`);
+            // Reemplazar "Coma" por "," y "punto" por "."
+            transcript = transcript.replace(/\bComa\b/gi, ',');
+            transcript = transcript.replace(/\bpunto\b/gi, '.');
 
-      // Agregar espacio después de cada coma y punto si no existe
-      transcript = transcript.replace(/,(?!\s)/g, ', ');
-      transcript = transcript.replace(/\.(?!\s)/g, '. ');
+            // Agregar espacio después de cada coma y punto si no existe
+            transcript = transcript.replace(/,(?!\s)/g, ', ');
+            transcript = transcript.replace(/\.(?!\s)/g, '. ');
 
-      // Reducir múltiples espacios a uno solo
-      transcript = transcript.replace(/\s{2,}/g, ' ');
+            // Reducir múltiples espacios a uno solo
+            transcript = transcript.replace(/\s{2,}/g, ' ');
 
-      // Insertar el texto, reemplazando la selección si existe
-      targetElement.value = beforeText + transcript + afterText;
+            // Comprobar si se debe agregar un espacio entre el texto nuevo y el texto después de la selección
+            if (!afterText.startsWith(' ') && transcript.endsWith(' ') === false && afterText.length > 0) {
+                transcript += ' ';
+            }
 
-      // Ajustar la posición del cursor al final del texto insertado
-      targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
+            // Insertar el texto, reemplazando la selección si existe
+            targetElement.value = beforeText + transcript + afterText;
 
-      if (targetElementId === 'freeTextInput') {
-        const question = questions[currentQuestion];
-        answers[question.id] = targetElement.value.trim();
-      }
+            // Ajustar la posición del cursor al final del texto insertado
+            targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
 
-      updatePreview();
-    };
+            if (targetElementId === 'freeTextInput') {
+                const question = questions[currentQuestion];
+                answers[question.id] = targetElement.value.trim();
+            }
 
-    recognition.onerror = function(event) {
-      console.error('Speech recognition error:', event.error);
-    };
+            updatePreview();
+        };
 
-    recognition.start();  // Inicia el reconocimiento si no está activo
-    isRecognitionActive = true;
-    console.log('Recognition started');
-  }
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        recognition.start();  // Inicia el reconocimiento si no está activo
+        isRecognitionActive = true;
+        console.log('Recognition started');
+    }
 }
 
 
