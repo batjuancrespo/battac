@@ -1,733 +1,550 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Informes de TAC</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #1a1a1a;
-            color: #f0f0f0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #2c2c2c;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        h1, h2 {
-            color: #e0e0e0;
-            text-align: center;
-        }
-        .question {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            box-sizing: border-box;
-            background-color: #3c3c3c;
-            color: #f0f0f0;
-        }
-        button {
-            color: #fff;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
-        button:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        #report {
-            margin-top: 20px;
-            border: 1px solid #444;
-            padding: 10px;
-            background-color: #3c3c3c;
-        }
-        .option-buttons {
-            display: flex;
-            flex-direction: column;
-            margin-top: 15px;
-        }
-        .option-button {
-            margin: 5px 0;
-            background-color: #2ecc71;
-            padding: 15px;
-            font-size: 18px;
-        }
-        .option-button:hover {
-            background-color: #27ae60;
-        }
-        .option-button.active {
-            background-color: #27ae60;
-            font-weight: bold;
-        }
-        #voiceButton, #finalVoiceButton {
-            background-color: #e74c3c;
-            margin-top: 15px;
-            font-size: 20px;
-            padding: 20px 30px;
-            width: 100%;
-        }
-        #voiceButton:hover, #finalVoiceButton:hover {
-            background-color: #c0392b;
-        }
-        #currentReport {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #3c3c3c;
-            border-radius: 4px;
-            font-style: normal;
-        }
-        .button-container {
-            display: flex;
-            justify-content: space-between;
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 760px;
-            background-color: #2c2c2c;
-            padding: 10px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-        #nextButton, #previousButton {
-            font-size: 20px;
-            padding: 15px 30px;
-            width: 45%;
-        }
-        #nextButton {
-            background-color: #3498db;
-        }
-        #nextButton:hover {
-            background-color: #2980b9;
-        }
-        #previousButton {
-            background-color: #95a5a6;
-        }
-        #previousButton:hover {
-            background-color: #7f8c8d;
-        }
-        #finalEditButton {
-            background-color: #9b59b6;
-            color: white;
-            padding: 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 18px;
-            margin-top: 20px;
-        }
-        #finalEditButton:hover {
-            background-color: #8e44ad;
-        }
-        #finalReportTextarea {
-            width: 100%;
-            height: 300px;
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 16px;
-            background-color: #3c3c3c;
-            color: #f0f0f0;
-            border: 1px solid #444;
-        }
-    </style>
+<html><head><base href="https://radiologos-info.com/tac-helper/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente de Informes TAC para Radiólogos con Vista Previa y Texto Libre</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .main-container {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+  }
+  .content-container {
+    flex: 3;
+    max-width: 75%;
+  }
+  .preview-container {
+    flex: 1;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: -5px 0 10px rgba(0,0,0,0.1);
+    max-width: 25%;
+    overflow-y: auto;
+  }
+  h1, h2 {
+    color: #2c3e50;
+    text-align: center;
+  }
+  .container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+    margin-bottom: 120px;
+  }
+  .question {
+    margin-bottom: 20px;
+  }
+  button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 20px 30px;
+    margin: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    font-size: 20px;
+    min-width: 200px;
+  }
+  button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  #report, #finalReport {
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+  }
+  textarea {
+    width: 100%;
+    height: 120px;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    resize: vertical;
+  }
+  #finalReportText {
+    height: 400px;
+  }
+  #finalReportContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  #finalReportContent {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.15);
+  }
+  #saveButton {
+    background-color: #2ecc71;
+  }
+  #saveButton:hover {
+    background-color: #27ae60;
+  }
+  #restartButton {
+    background-color: #f39c12;
+    display: none;
+  }
+  #restartButton:hover {
+    background-color: #d35400;
+  }
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .options-container button {
+    width: 80%;
+    margin: 10px 0;
+    padding: 20px 30px;
+    font-size: 24px;
+  }
+  .navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    padding: 15px 0;
+    box-shadow: 0 -5px 10px rgba(0,0,0,0.1);
+  }
+  #prevButton, #nextButton {
+    background-color: #95a5a6;
+    margin: 0 50px;
+  }
+  #prevButton:hover, #nextButton:hover {
+    background-color: #7f8c8d;
+  }
+  #previewText {
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  #dictateButton {
+    background-color: #e74c3c;
+  }
+  #dictateButton:hover {
+    background-color: #c0392b;
+  }
+  #dictationResult {
+    margin-top: 10px;
+    font-style: italic;
+  }
+  .free-text-container {
+    margin-top: 20px;
+  }
+  .free-text-container textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Generador de Informes de TAC</h1>
-        <form id="ctReportForm">
-            <div id="questionContainer" class="question"></div>
-            <button type="submit" id="generateBtn" style="display: none;">Generar Informe</button>
-        </form>
-
-        <div id="currentReport"></div>
+  <div class="main-container">
+    <div class="content-container">
+      <div class="container">
+        <h1>Asistente de Informes TAC para Radiólogos</h1>
+        <div id="questions"></div>
         <div id="report"></div>
-        <button id="finalEditButton" style="display: none;">Modificar informe final</button>
-        <textarea id="finalReportTextarea" style="display: none;"></textarea>
+      </div>
+
+      <div id="finalReportContainer">
+        <div id="finalReportContent">
+          <h2>Edición Final del Informe</h2>
+          <textarea id="finalReportText" rows="20"></textarea>
+          <button id="dictateFinalReportButton" onclick="startFinalReportDictation()">Dictar Informe Final</button>
+          <button id="saveButton" onclick="saveReport()">Guardar y Copiar Informe</button>
+          <button id="restartButton" onclick="restartQuestionnaire()" style="display: none;">Reiniciar</button>
+        </div>
+      </div>
     </div>
 
-    <script>
-    const questions = [
-      {
-        id: 'studyType',
-        text: '¿Qué tipo de exploración TAC se realiza?',
-        type: 'buttons',
-        options: ['Torácica', 'Abdominal', 'Toraco-abdominal']
-      },
-      {
-        id: 'contrast',
-        text: '¿Se ha utilizado contraste?',
-        type: 'buttons',
-        options: ['Con contraste', 'Sin contraste']
-      },
-      {
-        id: 'contrastPhase',
-        text: '¿En qué fase se ha realizado el estudio?',
-        type: 'buttons',
-        options: ['Arterial', 'Portal', 'Arterial y Portal'],
-        condition: (answers) => answers.contrast === 'Con contraste'
-      },
-      {
-        id: 'lungBases',
-        text: '¿Cómo son las bases pulmonares?',
-        type: 'options',
-        options: ['Normal o normales', 'Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente', 'Significativo derrame pleural ... de unos .... cm de grosor máximo.'],
-        condition: (answers) => answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'mediastinicVascular',
-        text: 'Describa las estructuras mediastínicas vasculares:',
-        type: 'options',
-        options: ['Normales', 'Cardiomegalia'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Torácica'
-      },
-      {
-        id: 'mediastinicAdenopathy',
-        text: '¿Existe adenopatías mediastínicas?',
-        type: 'options',
-        options: ['No', 'Pequeñas inespecíficas'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Torácica'
-      },
-      {
-        id: 'lungParenchyma',
-        text: 'Describa el parénquima pulmonar:',
-        type: 'options',
-        options: ['Normal o normales', 'Parénquima pulmonar de aspecto enfisematoso', 'Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Torácica'
-      },
-      {
-        id: 'liver',
-        text: 'Describa el hígado:',
-        type: 'options',
-        options: ['Normal', 'Con rasgos de hepatopatía crónica'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'loes',
-        text: 'Existen LOES hepáticas?',
-        type: 'options',
-        options: ['No'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'gallbladderBileDuct',
-        text: 'Describa la vesícula y vía biliar:',
-        type: 'options',
-        options: ['Normal o normales', 'Colelitiasis sin dilatación de la via biliar', 'Colecistectomía sin dilatación de vía biliar'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'pancreas',
-        text: 'Describa el páncreas:',
-        type: 'options',
-        options: ['Normal', 'Rasgos de pancreatopatía crónica'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'spleen',
-        text: 'Describa el bazo:',
-        type: 'options',
-        options: ['Normal', 'Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'adrenalGlands',
-        text: 'Describa las glándulas suprarrenales:',
-        type: 'options',
-        options: ['Normal o normales', 'Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.', 'Hiperplasia adrenal bilateral'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'kidneys',
-        text: 'Describa los riñones:',
-        type: 'options',
-        options: ['Normal o normales', 'Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'estomago',
-        text: 'Describa la cámara gástrica:',
-        type: 'options',
-        options: ['Normal', 'Pobremente distendida'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'idelgado',
-        text: 'Describa las asas de intestino delgado:',
-        type: 'options',
-        options: ['Normales', 'Se aprecian suturas'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'igrueso',
-        text: 'Describa el marco cólico:',
-        type: 'options',
-        options: ['Normal', 'Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'freeFluid',
-        text: '¿Hay líquido libre intra-abdominal o adenopatías?',
-        type: 'options',
-        options: ['No'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'aortoiliacAxis',
-        text: 'Describa el eje aorto-ilíaco:',
-        type: 'options',
-        options: ['Normal', 'Ateromatosis aorto-iliaca calcificada difusa', 'Dilatación aneurismática de aorta abdominal infrarrenal de ... cm'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'axialSkeleton',
-        text: 'Describa el esqueleto axial incluido en el estudio:',
-        type: 'options',
-        options: ['Sin hallazgos de interés', 'Cambios degenerativos'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal'
-      },
-      {
-        id: 'impression',
-        text: 'Impresión diagnóstica:',
-        type: 'options',
-        options: ['Sin hallazgos de interés', 'Similar a previos', 'Ver informe descriptivo'],
-        condition: (answers) => answers.studyType === 'Toraco-abdominal' || answers.studyType === 'Abdominal' || answers.studyType === 'Torácica'
-      }
-    ];
+    <div class="preview-container">
+      <h2>Vista Previa del Informe</h2>
+      <div id="previewText"></div>
+    </div>
+  </div>
 
-    let currentQuestionIndex = 0;
-    let answers = {};
-    let report = '';
+  <div class="navigation-buttons">
+    <button id="prevButton" onclick="previousQuestion()">Anterior</button>
+    <button id="nextButton" onclick="nextQuestion()">Siguiente</button>
+  </div>
 
-    const questionContainer = document.getElementById('questionContainer');
-    const generateBtn = document.getElementById('generateBtn');
-    const reportDiv = document.getElementById('report');
-    const currentReportDiv = document.getElementById('currentReport');
+<script>
+const questions = [
+  {
+    id: 'type',
+    text: "¿Qué tipo de exploración TAC está informando?",
+    options: ["Torácica", "Abdominal", "Toracoabdominal"]
+  },
+  {
+    id: 'contrast',
+    text: "¿Se ha utilizado contraste endovenoso?",
+    options: ["Sí", "No"]
+  },
+  {
+    id: 'contrastPhase',
+    text: "¿Qué fases de adquisición se han realizado?",
+    options: ["Arterial", "Portal", "Arterial y Portal"],
+    condition: (answers) => answers.contrast === "Sí"
+  },
+  {
+    id: 'lungBases',
+    text: "¿Cómo se observan las bases pulmonares?",
+    options: ["Normales", "Atelectasias", "Infiltrados", "Otro"],
+    category: "abdomen",
+    allowFreeText: true
+  },
+  {
+    id: 'lungs',
+    text: "¿Cómo se observan los pulmones?",
+    options: ["Normales", "Nódulos", "Infiltrados", "Atelectasias", "Enfisema", "Otro"],
+    category: "thorax",
+    allowFreeText: true
+  },
+  {
+    id: 'pleura',
+    text: "¿Hay alteraciones pleurales?",
+    options: ["No", "Derrame", "Engrosamiento", "Neumotórax", "Otro"],
+    category: "thorax",
+    allowFreeText: true
+  },
+  {
+    id: 'mediastinum',
+    text: "¿Cómo se observa el mediastino?",
+    options: ["Normal", "Adenopatías", "Masas", "Ensanchamiento", "Otro"],
+    category: "thorax",
+    allowFreeText: true
+  },
+  {
+    id: 'heart',
+    text: "¿Cómo se observa el corazón?",
+    options: ["Normal", "Cardiomegalia", "Calcificaciones coronarias", "Derrame pericárdico", "Otro"],
+    category: "thorax",
+    allowFreeText: true
+  },
+  {
+    id: 'liver',
+    text: "¿Cómo se observa el hígado?",
+    options: ["Normal", "Lesiones focales", "Hepatomegalia", "Cirrosis", "Esteatosis", "Otro"],
+    category: "abdomen",
+    allowFreeText: true
+  },
+  {
+    id: 'pancreas',
+    text: "¿Cómo se observa el páncreas?",
+    options: ["Normal", "Lesiones focales", "Inflamación", "Atrofia", "Otro"],
+    category: "abdomen",
+    allowFreeText: true
+  },
+  {
+    id: 'spleen',
+    text: "¿Cómo se observa el bazo?",
+    options: ["Normal", "Esplenomegalia", "Lesiones focales", "Otro"],
+    category: "abdomen",
+    allowFreeText: true
+  },
+  {
+    id: 'kidneys',
+    text: "¿Cómo se observan los riñones?",
+    options: ["Normales", "Litiasis", "Quistes", "Masas", "Hidronefrosis", "Otro"],
+    category: "abdomen",
+    allowFreeText: true
+  }
+];
 
-    // ... (código anterior sin cambios)
+let currentQuestion = 0;
+let answers = {};
+let recognition;
+let isRecognitionActive = false;
 
-    function showQuestion(index) {
-      const question = questions[index];
-      if (!question) {
-        // Hemos llegado al final de las preguntas
-        showFinalEditButton();
-        return;
-      }
+function displayQuestion() {
+  const question = questions[currentQuestion];
 
-      if (question.condition && !question.condition(answers)) {
-        currentQuestionIndex++;
-        showQuestion(currentQuestionIndex);
-        return;
-      }
-
-      let html = `<h2>${question.text}</h2>`;
-
-      if (question.type === 'buttons' || question.type === 'options') {
-        html += `<div class="option-buttons">`;
-        question.options.forEach(option => {
-          const isActive = answers[question.id] === option ? 'active' : '';
-          html += `<button type="button" class="option-button ${isActive}" data-value="${option}">${option}</button>`;
-        });
-        html += `</div>`;
-      }
-
-      html += `<textarea id="${question.id}" rows="5">${answers[question.id] || ''}</textarea>`;
-
-      if (index > 2) {
-        html += `<button type="button" id="voiceButton">Dictar por voz</button>`;
-      }
-
-      html += `<div class="button-container">`;
-      if (currentQuestionIndex > 0) {
-        html += `<button type="button" id="previousButton">Anterior</button>`;
-      }
-      if (currentQuestionIndex < questions.length - 1) {
-        html += `<button type="button" id="nextButton">Siguiente</button>`;
-      }
-      html += `</div>`;
-
-      questionContainer.innerHTML = html;
-
-      if (question.type === 'buttons' || question.type === 'options') {
-        document.querySelectorAll('.option-button').forEach(button => {
-          button.addEventListener('click', () => {
-            document.querySelectorAll('.option-button').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            answers[question.id] = button.dataset.value;
-            document.getElementById(question.id).value = button.dataset.value;
-            updateReport();
-          });
-        });
-      }
-
-  // Configurar el reconocimiento de voz solo después de las tres primeras preguntas
-  if (index > 2) {
-    setupVoiceRecognition(question.id);
+  if (question.condition && !question.condition(answers)) {
+    nextQuestion();
+    return;
   }
 
-  if (currentQuestionIndex > 0) {
-    document.getElementById('previousButton').addEventListener('click', () => {
-      currentQuestionIndex--;
-      showQuestion(currentQuestionIndex);
-    });
+  if (answers.type === "Torácica" && question.category === "abdomen") {
+    nextQuestion();
+    return;
+  }
+  if (answers.type === "Abdominal" && question.category === "thorax" && question.id !== "lungBases") {
+    nextQuestion();
+    return;
   }
 
-  document.getElementById('nextButton').addEventListener('click', () => {
-    answers[question.id] = document.getElementById(question.id).value;
-    updateReport();
-    currentQuestionIndex++;
-    showQuestion(currentQuestionIndex);
+  const questionContainer = document.getElementById('questions');
+  questionContainer.innerHTML = '';
+
+  const questionElement = document.createElement('div');
+  questionElement.className = 'question';
+  questionElement.innerHTML = `<h2>${question.text}</h2>`;
+
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'options-container';
+
+  question.options.forEach(option => {
+    const button = document.createElement('button');
+    button.textContent = option;
+    button.onclick = () => selectOption(option);
+    optionsContainer.appendChild(button);
   });
 
-  // Restaurar el texto del textarea si existe una respuesta previa
-  if (answers[question.id]) {
-    document.getElementById(question.id).value = answers[question.id];
+  questionElement.appendChild(optionsContainer);
+
+  if (question.allowFreeText) {
+    const freeTextContainer = document.createElement('div');
+    freeTextContainer.className = 'free-text-container';
+    freeTextContainer.innerHTML = `
+      <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
+      <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
+    `;
+    questionElement.appendChild(freeTextContainer);
+  }
+
+  questionContainer.appendChild(questionElement);
+
+  updateNavigationButtons();
+  updatePreview();
+}
+
+function selectOption(option) {
+  const question = questions[currentQuestion];
+  const freeTextInput = document.getElementById('freeTextInput');
+
+  if (freeTextInput && freeTextInput.value.trim() !== '') {
+    answers[question.id] = freeTextInput.value.trim();
+  } else {
+    answers[question.id] = option;
+  }
+
+  nextQuestion();
+}
+
+function toggleDictation(targetElementId) {
+  if (!recognition) {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = true;  // Configura el reconocimiento como continuo
+  }
+
+  if (isRecognitionActive) {
+    recognition.stop();  // Detiene el reconocimiento si está activo
+    isRecognitionActive = false;
+    console.log('Recognition stopped');
+  } else {
+    recognition.onresult = function(event) {
+      const targetElement = document.getElementById(targetElementId);
+      if (!targetElement) {
+        console.error('Target element not found:', targetElementId);
+        return;
+      }
+
+      let transcript = event.results[event.results.length - 1][0].transcript;
+      const selectionStart = targetElement.selectionStart;
+      const selectionEnd = targetElement.selectionEnd;
+      const beforeText = targetElement.value.slice(0, selectionStart);
+      const afterText = targetElement.value.slice(selectionEnd);
+
+      // Capitalizar la primera letra de la frase, si es necesario
+      if (!beforeText || beforeText.endsWith('. ') || beforeText.endsWith('\n')) {
+        transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+      } else if (beforeText.endsWith(' ') || beforeText.endsWith(',')) {
+        transcript = transcript.charAt(0).toLowerCase() + transcript.slice(1);
+      } else {
+        transcript = ' ' + transcript.charAt(0).toLowerCase() + transcript.slice(1);
+      }
+
+      // Reemplazar "Coma" por "," y "punto" por "."
+      transcript = transcript.replace(/\bComa\b/gi, ',');
+      transcript = transcript.replace(/\bpunto\b/gi, '.');
+
+      // Eliminar espacios antes de los signos de puntuación
+      transcript = transcript.replace(/\s*([,.])/g, '$1');
+
+      // Capitalizar la primera letra después de cada punto
+      transcript = transcript.replace(/\. (\w)/g, (match, p1) => `. ${p1.toUpperCase()}`);
+
+      // Agregar espacio después de cada coma y punto si no existe
+      transcript = transcript.replace(/,(?!\s)/g, ', ');
+      transcript = transcript.replace(/\.(?!\s)/g, '. ');
+
+      // Reducir múltiples espacios a uno solo
+      transcript = transcript.replace(/\s{2,}/g, ' ');
+
+      // Insertar el texto, reemplazando la selección si existe
+      targetElement.value = beforeText + transcript + afterText;
+
+      // Ajustar la posición del cursor al final del texto insertado
+      targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
+
+      if (targetElementId === 'freeTextInput') {
+        const question = questions[currentQuestion];
+        answers[question.id] = targetElement.value.trim();
+      }
+
+      updatePreview();
+    };
+
+    recognition.onerror = function(event) {
+      console.error('Speech recognition error:', event.error);
+    };
+
+    recognition.start();  // Inicia el reconocimiento si no está activo
+    isRecognitionActive = true;
+    console.log('Recognition started');
   }
 }
 
-// ... (resto del código sin cambios)
+function nextQuestion() {
+  if (currentQuestion < questions.length - 1) {
+    currentQuestion++;
+    displayQuestion();
+  } else {
+    showFinalReport();
+  }
+}
 
-    function setupVoiceRecognition(targetId) {
-      if ('webkitSpeechRecognition' in window) {
-        const recognition = new webkitSpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'es-ES';
+function previousQuestion() {
+  if (currentQuestion > 0) {
+    do {
+      currentQuestion--;
+      const question = questions[currentQuestion];
 
-        const voiceButton = document.getElementById('voiceButton');
-        const targetTextArea = document.getElementById(targetId);
-
-        voiceButton.addEventListener('click', () => {
-          if (voiceButton.textContent === 'Dictar por voz') {
-            recognition.start();
-            voiceButton.textContent = 'Detener dictado';
-          } else {
-            recognition.stop();
-            voiceButton.textContent = 'Dictar por voz';
-          }
-        });
-
-        recognition.onresult = (event) => {
-          let transcript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-
-          // Obtener el texto existente y las posiciones de selección
-          const existingText = targetTextArea.value;
-          const selectionStart = targetTextArea.selectionStart;
-          const selectionEnd = targetTextArea.selectionEnd;
-
-          // Determinar si hay texto seleccionado
-          const isTextSelected = selectionStart !== selectionEnd;
-
-          // Determinar si se debe agregar un espacio y usar mayúscula o minúscula
-          let formattedTranscript = transcript.trim();
-          if (selectionStart > 0 && !isTextSelected) {
-            const textBeforeCursor = existingText.substring(0, selectionStart);
-            const lastChar = textBeforeCursor.slice(-1);
-
-            if (lastChar === '.') {
-              // Si el último carácter es un punto, comienza con mayúscula
-              formattedTranscript = formattedTranscript.charAt(0).toUpperCase() + formattedTranscript.slice(1);
-            } else if (lastChar !== ' ' && lastChar !== '') {
-              // Si no hay espacio antes, agrega uno y usa minúscula
-              formattedTranscript = ' ' + formattedTranscript.toLowerCase();
-            } else {
-              // Si ya hay un espacio, simplemente usa minúscula
-              formattedTranscript = formattedTranscript.toLowerCase();
-            }
-          } else if (isTextSelected) {
-            // Si hay texto seleccionado, mantén el formato del primer carácter seleccionado
-            const firstSelectedChar = existingText.charAt(selectionStart);
-            formattedTranscript = firstSelectedChar === firstSelectedChar.toUpperCase()
-              ? formattedTranscript.charAt(0).toUpperCase() + formattedTranscript.slice(1)
-              : formattedTranscript.toLowerCase();
-          } else {
-            // Si está al inicio del texto, usa mayúscula
-            formattedTranscript = formattedTranscript.charAt(0).toUpperCase() + formattedTranscript.slice(1);
-          }
-
-          // Insertar o reemplazar el texto formateado
-          targetTextArea.value = existingText.slice(0, selectionStart) + formattedTranscript + existingText.slice(selectionEnd);
-
-          // Actualizar la posición del cursor
-          const newCursorPosition = selectionStart + formattedTranscript.length;
-          targetTextArea.setSelectionRange(newCursorPosition, newCursorPosition);
-
-          // Reconocer signos de puntuación
-          targetTextArea.value = targetTextArea.value.replace(/ punto/g, '.');
-          targetTextArea.value = targetTextArea.value.replace(/ coma/g, ',');
-          targetTextArea.value = targetTextArea.value.replace(/ dos puntos/g, ':');
-          targetTextArea.value = targetTextArea.value.replace(/ punto y coma/g, ';');
-
-          answers[targetId] = targetTextArea.value;
-          updateReport();
-        };
-
-        recognition.onerror = (event) => {
-          console.error('Error en el reconocimiento de voz:', event.error);
-          voiceButton.textContent = 'Dictar por voz';
-        };
-
-        recognition.onend = () => {
-          voiceButton.textContent = 'Dictar por voz';
-        };
-      } else {
-        document.getElementById('voiceButton').style.display = 'none';
+      if (
+        (answers.type === "Abdominal" && (question.category === "abdomen" || question.id === "lungBases")) ||
+        (answers.type === "Torácica" && question.category === "thorax") ||
+        answers.type === "Toracoabdominal" ||
+        !question.category
+      ) {
+        break;
       }
-    }
+    } while (currentQuestion > 0);
 
-    document.getElementById('ctReportForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      updateReport();
+    displayQuestion();
+  }
+}
+
+function updateNavigationButtons() {
+  const prevButton = document.getElementById('prevButton');
+  const nextButton = document.getElementById('nextButton');
+
+  prevButton.style.display = currentQuestion === 0 ? 'none' : 'inline-block';
+  nextButton.textContent = currentQuestion === questions.length - 1 ? 'Finalizar' : 'Siguiente';
+}
+
+function showFinalReport() {
+  const finalReportContainer = document.getElementById('finalReportContainer');
+  const finalReportText = document.getElementById('finalReportText');
+  finalReportContainer.style.display = 'block';
+  finalReportText.value = generateReport();
+}
+
+function generateReport() {
+  let report = '';
+
+  if (answers.type && answers.contrast) {
+    const tacType = answers.type.toLowerCase();
+    const contrastUsed = answers.contrast === 'Sí' ? 'tras' : 'sin';
+    const contrastPhase = answers.contrast === 'Sí' && answers.contrastPhase ? ` con adquisición de imágenes en fase ${answers.contrastPhase.toLowerCase()}` : '';
+
+    report += `Se realiza exploración ${tacType} ${contrastUsed} la administración endovenosa de contraste${contrastPhase}.\n\n`;
+  }
+
+  const thoraxQuestions = questions.filter(q => q.category === 'thorax');
+  const abdominalQuestions = questions.filter(q => q.category === 'abdomen');
+
+  if (answers.type === 'Torácica' || answers.type === 'Toracoabdominal') {
+    thoraxQuestions.forEach(q => {
+      if (answers[q.id]) {
+        report += `${answers[q.id]}\n`;
+      }
     });
+  }
 
-    function updateReport() {
-      let newReport = generateReport();
-      if (newReport !== report) {
-        report = newReport;
-        currentReportDiv.innerHTML = `<p>${report}</p>`;
+  if (answers.type === 'Abdominal' || answers.type === 'Toracoabdominal') {
+    if (answers.lungBases) {
+      report += `${answers.lungBases}\n`;
+    }
+    abdominalQuestions.forEach(q => {
+      if (answers[q.id] && q.id !== 'lungBases') {
+        report += `${answers[q.id]}\n`;
       }
-    }
+    });
+    report += '\n';
+  }
 
-    function generateReport() {
-      let generatedReport = '';
-      
-      let studyDescription = `Se realiza exploración ${answers.studyType ? answers.studyType.toLowerCase() : ''}`;
-      if (answers.contrast === 'Con contraste') {
-        studyDescription += ` tras la administración endovenosa de contraste con adquisición de imágenes`;
-        if (answers.contrastPhase) {
-          if (answers.contrastPhase === 'Arterial') {
-            studyDescription += ` en fase arterial`;
-          } else if (answers.contrastPhase === 'Portal') {
-            studyDescription += ` en fase portal`;
-          } else {
-            studyDescription += ` en fases arterial y portal`;
-          }
-        }
-      }
-      studyDescription += '.';
-      generatedReport += `${studyDescription}`;
+  return report;
+}
 
-      questions.forEach((question) => {
-        if (answers[question.id]) {
-          if (question.id === 'mediastinicVascular') {
-            if (answers[question.id] === 'Normales') {
-              generatedReport += `<br>Estructuras mediastínicas vasculares sin hallazgos morfológicos relevantes.`;
-            } else if (answers[question.id] === 'Cardiomegalia') {
-              generatedReport += `<br>Cardiomegalia. Resto de estructuras mediastínicas vasculares sin hallazgos morfológicos relevantes.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'mediastinicAdenopathy') {
-            if (answers[question.id] === 'No') {
-              generatedReport += `<br>No se aprecian adenopatías mediastínicas de aspecto patológico.`;
-            } else if (answers[question.id] === 'Pequeñas inespecíficas') {
-              generatedReport += `<br>Pequeñas formaciones ganglionares mediastínicas de tamaño no significativo.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'lungParenchyma') {
-            if (answers[question.id] === 'Normal o normales') {
-              generatedReport += `<br>Parénquima pulmonar sin imágenes nodulares ni aumentos de densidad sugestivos de afectación patológica.`;
-            } else if (answers[question.id] === 'Parénquima pulmonar de aspecto enfisematoso') {
-              generatedReport += `<br>Parénquima pulmonar de aspecto enfisematoso sin claras imágenes nodulares ni aumentos de densidad sugestivos de afectación patológica.`;
-            } else if (answers[question.id] === 'Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.') {
-              generatedReport += `<br>Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
+function saveReport() {
+  const finalReport = document.getElementById('finalReportText').value;
+  navigator.clipboard.writeText(finalReport).then(() => {
+    alert('Informe copiado al portapapeles');
+    document.getElementById('restartButton').style.display = 'inline-block';
+  }).catch(err => {
+    console.error('Error al copiar al portapapeles:', err);
+  });
+}
 
+function restartQuestionnaire() {
+  currentQuestion = 0;
+  answers = {};
+  document.getElementById('finalReportContainer').style.display = 'none';
+  displayQuestion();
+}
 
+function updatePreview() {
+  const previewText = document.getElementById('previewText');
+  previewText.innerHTML = generateReport().replace(/\n/g, '<br>');
+}
 
+// Iniciar el cuestionario al cargar la página
+window.onload = () => {
+  displayQuestion();
+};
 
-
-          } else if (question.id === 'lungBases') {
-            if (answers[question.id] === 'Normal o normales') {
-              generatedReport += `<br>Bases pulmonares incluidas en el estudio sin hallazgos morfológicos relevantes.`;
-            } else if (answers[question.id] === 'Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente') {
-              generatedReport += `<br>Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente.`;
-            } else if (answers[question.id] === 'Significativo derrame pleural ... de unos .... cm de grosor máximo.') {
-              generatedReport += `<br>Significativo derrame pleural ... de unos .... cm de grosor máximo.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-
-
-
-
-
-
-          } else if (question.id === 'liver') {
-            if (answers[question.id] === 'Normal') {
-              generatedReport += `<br>El hígado es de bordes lisos y densidad homogénea.`;
-            } else if (answers[question.id] === 'Con rasgos de hepatopatía crónica') {
-              generatedReport += `<br>El hígado es de contornos lobulados con parenquima discretamente granular en relación con rasgos de hepatopatía crónica.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'loes') {
-            if (answers[question.id] === 'No') {
-              generatedReport += ` No se identifican lesiones ocupantes de espacio.`;
-            } else {
-              generatedReport += ` ${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'gallbladderBileDuct') {
-            if (answers[question.id] === 'Normal o normales') {
-              generatedReport += `<br>La vesícula biliar y la vía biliar son normales.`;
-            } else if (answers[question.id] === 'Colelitiasis sin dilatación de la via biliar') {
-              generatedReport += `<br>La vesícula biliar muestra residuos litiásicos en su luz. Vía biliar intra y extrahepática no dilatada.`;
-            } else if (answers[question.id] === 'Colecistectomía sin dilatación de vía biliar') {
-              generatedReport += `<br>Colecistectomía. Vía biliar intra y extrahepática no dilatada.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'pancreas') {
-            if (answers[question.id] === 'Normal') {
-              generatedReport += `<br>Glándula pancreática sin lesiones focales ni dilatación del ducto pancreático principal.`;
-            } else if (answers[question.id] === 'Rasgos de pancreatopatía crónica') {
-              generatedReport += `<br>El páncreas muestra rasgos de pancreatopatía crónica, con una glándula de aspecto discretamente atrófico y pequeños focos de calcificación.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'spleen') {
-            if (answers[question.id] === 'Normal') {
-              generatedReport += `<br>Bazo de normal tamaño y morfología.`;
-            } else if (answers[question.id] === 'Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.') {
-              generatedReport += `<br>Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'adrenalGlands') {
-            if (answers[question.id] === 'Normales') {
-              generatedReport += `<br>Glándulas suprarrenales sin hallazgos relevantes.`;
-            } else if (answers[question.id] === 'Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.') {
-              generatedReport += `<br>Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.`;
-            } else if (answers[question.id] === 'Hiperplasia adrenal bilateral') {
-              generatedReport += `<br>Glándulas suprarrenales de aspecto hiperplásico bilateralmente.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'kidneys') {
-            if (answers[question.id] === 'Normal o normales') {
-              generatedReport += `<br>Riñones con buena diferenciación cortico-medular sin lesiones focales.`;
-            } else if (answers[question.id] === 'Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.') {
-              generatedReport += `<br>Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'estomago') {
-            if (answers[question.id] === 'Normal') {
-              generatedReport += `<br>Cámara gástrica moderadamente distendida sin que se identifiquen engrosamientos parietales.`;
-            } else if (answers[question.id] === 'Pobremente distendida') {
-              generatedReport += `<br>Cámara gástrica pobremente distendida sin que se definan claros engrosamientos parietales mediante esta técnica diagnóstica.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'idelgado') {
-            if (answers[question.id] === 'Normales') {
-              generatedReport += `<br>Asas de delgado sin claros engrosamientos parietales ni cambios de calibre significativos.`;
-            } else if (answers[question.id] === 'Se aprecian suturas') {
-              generatedReport += `<br>Se identifican suturas en ... de morfología conservada.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'igrueso') {
-            if (answers[question.id] === 'Normal') {
-              generatedReport += `<br>Marco cólico de normal calibre y morfología sin claros engrosamientos parietales ni cambios de calibre significativos.`;
-            } else if (answers[question.id] === 'Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.') {
-              generatedReport += `<br>Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'freeFluid') {
-            if (answers[question.id] === 'No') {
-              generatedReport += `<br>No se objetiva líquido libre ni adenopatías intra-abdominales de aspecto patológico.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'aortoiliacAxis') {
-            if (answers[question.id] === 'Normal') {
-              generatedReport += `<br>Eje aortoíliaco sin alteraciones significativas.`;
-            } else if (answers[question.id] === 'Ateromatosis aorto-iliaca calcificada difusa') {
-              generatedReport += `<br>Ateromatosis aorto-iliaca calcificada difusa.`;
-            } else if (answers[question.id] === 'Dilatación aneurismática de aorta abdominal infrarrenal de ... cm') {
-              generatedReport += `<br>Dilatación aneurismática de aorta abdominal infrarrenal de ... cm.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'axialSkeleton') {
-            if (answers[question.id] === 'Sin hallazgos de interés') {
-              generatedReport += `<br>Esqueleto axial sin hallazgos relevantes.`;
-            } else if (answers[question.id] === 'Cambios degenerativos') {
-              generatedReport += `<br>Cambios degenerativos en esqueleto axial.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.id === 'impression') {
-            if (answers[question.id] === 'Sin hallazgos de interés') {
-              generatedReport += `<br>Sin hallazgos de interés.`;
-            } else if (answers[question.id] === 'Similar a previos') {
-              generatedReport += `<br>Exploración similar a últimos controles de imagen.`;
-            } else if (answers[question.id] === 'Ver informe descriptivo') {
-              generatedReport += `<br>Ver informe descriptivo.`;
-            } else {
-              generatedReport += `<br>${postProcessText(answers[question.id])}`;
-            }
-          } else if (question.type === 'options') {
-            generatedReport += `<br>${question.text} ${answers[question.id]}`;
-          } else if (question.id !== 'studyType' && question.id !== 'contrast' && question.id !== 'contrastPhase') {
-            generatedReport += `<br>${postProcessText(answers[question.id])}`;
-          }
-        }
-      });
-      return generatedReport;
-    }
-    function postProcessText(text) {
-      // Capitalizar la primera letra de cada oración
-      text = text.replace(/(^\w|\.\s+\w)/g, match => match.toUpperCase());
-      
-      // Asegurar que hay un espacio después de cada punto
-      text = text.replace(/\.(\w)/g, '. $1');
-      
-      // Capitalizar nombres propios comunes en informes médicos
-      const properNouns = ['TC', 'TAC', 'RMN', 'PET', 'ECG'];
-      properNouns.forEach(noun => {
-        const regex = new RegExp(`\\b${noun.toLowerCase()}\\b`, 'g');
-        text = text.replace(regex, noun);
-      });
-
-      return text;
-    }
-
-    showQuestion(currentQuestionIndex);
-  </script>
+// Inicializa la función de dictado para el informe final
+function startFinalReportDictation() {
+  toggleDictation('finalReportText');
+}
+</script>
 </body>
 </html>
