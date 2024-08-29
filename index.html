@@ -423,11 +423,11 @@ function toggleDictation(targetElementId) {
             const afterText = targetElement.value.slice(selectionEnd);
 
             // Reemplazar "punto y aparte" por ".\n" para salto de línea
-            transcript = transcript.replace(/\bpunto y aparte\b/gi, '.'\n);
+            transcript = transcript.replace(/\bpunto y aparte\b/'.'\n);
 
             // Reemplazar "Coma" por "," y "punto" por "."
-            transcript = transcript.replace(/\bcoma\b/gi, ',');
-            transcript = transcript.replace(/\bpunto\b/gi, '.');
+            transcript = transcript.replace(/\bcoma\b/', ');
+            transcript = transcript.replace(/\bpunto\b/'. ');
 
             // Eliminar espacios antes de los signos de puntuación y asegurar espacio después
             transcript = transcript.replace(/\s*([,.])/, '$1');  // Elimina espacios antes de "," y "."
