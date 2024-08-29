@@ -434,8 +434,8 @@ function toggleDictation(targetElementId) {
                 return '. ' + p1.toUpperCase();
             });
 
-            // Si el texto antes de la selección termina con un punto o nueva línea, capitalizar
-            if (beforeText.endsWith('. ') || beforeText.endsWith('\n') || beforeText.trim().endsWith('.')) {
+            // Ajustar capitalización
+            if (!beforeText || beforeText.endsWith('. ') || beforeText.endsWith('\n')) {
                 transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
             } else if (beforeText.endsWith(' ') || beforeText.endsWith(',')) {
                 transcript = transcript.charAt(0).toLowerCase() + transcript.slice(1);
@@ -454,8 +454,8 @@ function toggleDictation(targetElementId) {
             // Reducir múltiples espacios a uno solo
             transcript = transcript.replace(/\s{2,}/g, ' ');
 
-            // Comprobar si se debe agregar un espacio entre el texto nuevo y el texto después de la selección
-            if (!afterText.startsWith(' ') && transcript.endsWith(' ') === false && afterText.length > 0) {
+            // Añadir un espacio si no hay uno entre el texto dictado y la siguiente palabra
+            if (!afterText.startsWith(' ') && !afterText.startsWith('\n') && transcript.trim() && afterText.length > 0) {
                 transcript += ' ';
             }
 
