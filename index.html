@@ -423,7 +423,7 @@ function toggleDictation(targetElementId) {
             const afterText = targetElement.value.slice(selectionEnd);
 
             // Reemplazar "punto y aparte" por ".\n" para salto de línea
-            transcript = transcript.replace(/\bpunto y aparte\b/gi, '.\n');
+            transcript = transcript.replace(/\bpunto y aparte\b/gi, '.'\n);
 
             // Reemplazar "Coma" por "," y "punto" por "."
             transcript = transcript.replace(/\bcoma\b/gi, ',');
