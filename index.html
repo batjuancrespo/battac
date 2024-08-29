@@ -407,68 +407,67 @@ function toggleDictation(targetElementId) {
         isRecognitionActive = false;
         console.log('Recognition stopped');
     } else {
-        recognition.onresult = function(event) {
-            const targetElement = document.getElementById(targetElementId);
-            let transcript = event.results[event.results.length - 1][0].transcript;
+    recognition.onresult = function(event) {
+        const targetElement = document.getElementById(targetElementId);
+        let transcript = event.results[event.results.length - 1][0].transcript;
+        // Aplicar corrección almacenada si existe
+        const storedCorrection = localStorage.getItem(`correction_${transcript}`);
+        if (storedCorrection) {
+            transcript = storedCorrection;
+        }
+        const selectionStart = targetElement.selectionStart;
+        const selectionEnd = targetElement.selectionEnd;
+        const beforeText = targetElement.value.slice(0, selectionStart);
+        const afterText = targetElement.value.slice(selectionEnd);
 
-            // Aplicar corrección almacenada si existe
-            const storedCorrection = localStorage.getItem(`correction_${transcript}`);
-            if (storedCorrection) {
-                transcript = storedCorrection;
-            }
+        // Reemplazar "punto y aparte" por ".\n" para salto de línea
+        transcript = transcript.replace(/\bpunto y aparte\b/g, '.\n');
 
-            const selectionStart = targetElement.selectionStart;
-            const selectionEnd = targetElement.selectionEnd;
-            const beforeText = targetElement.value.slice(0, selectionStart);
-            const afterText = targetElement.value.slice(selectionEnd);
+        // Reemplazar "Coma" por "," y "punto" por "."
+        transcript = transcript.replace(/\bcoma\b/g, ',');
+        transcript = transcript.replace(/\bpunto\b/g, '.');
 
-            // Reemplazar "punto y aparte" por ".\n" para salto de línea
-            transcript = transcript.replace(/\bpunto y aparte\b/'.'\n);
+        // Asegurar que no haya espacios antes de los signos de puntuación y que haya un espacio después
+        transcript = transcript.replace(/\s*([,.])/g, '$1 ').trim();
 
-            // Reemplazar "Coma" por "," y "punto" por "."
-            transcript = transcript.replace(/\bcoma\b/', ');
-            transcript = transcript.replace(/\bpunto\b/'. ');
+        // Eliminar el espacio extra después de un punto seguido de un salto de línea
+        transcript = transcript.replace(/\. \n/g, '.\n');
 
-            // Eliminar espacios antes de los signos de puntuación y asegurar espacio después
-            transcript = transcript.replace(/\s*([,.])/, '$1');  // Elimina espacios antes de "," y "."
-            transcript = transcript.replace(/([,.])(?=\S)/, '$1 ');  // Asegura espacio después de "," y "."
+        // Capitalizar la primera letra después de cada punto o salto de línea
+        transcript = transcript.replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => {
+            return '. ' + p1.toUpperCase();
+        });
 
-            // Capitalizar la primera letra después de cada punto o salto de línea
-            transcript = transcript.replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => {
-                return '. ' + p1.toUpperCase();
-            });
+        // Capitalizar la primera palabra si es el comienzo del texto o después de un punto
+        if (beforeText.trim() === '' || beforeText.trim().endsWith('.')) {
+            transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+        }
 
-            // Capitalizar la primera palabra si es el comienzo del texto o después de un punto
-            if (beforeText.trim() === '' || beforeText.trim().endsWith('.')) {
-                transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
-            }
+        // Detectar si el texto antes de la selección termina en una palabra y no en un signo de puntuación
+        if (beforeText && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') && !/[,.]\s*$/.test(beforeText)) {
+            transcript = ' ' + transcript; // Añadir un espacio antes del nuevo texto
+        }
 
-            // Detectar si el texto antes de la selección termina en una palabra o un signo de puntuación
-            if (beforeText && !beforeText.endsWith(' ') && !beforeText.endsWith('\n')) {
-                transcript = ' ' + transcript; // Añadir un espacio antes del nuevo texto
-            }
+        // Detectar si el texto después de la selección comienza con una palabra
+        if (afterText && !afterText.startsWith(' ') && !/^[,.]/.test(afterText)) {
+            transcript += ' '; // Añadir un espacio después del nuevo texto
+        }
 
-            // Detectar si el texto después de la selección comienza con una palabra o un signo de puntuación
-            if (afterText && !afterText.startsWith(' ')) {
-                transcript += ' '; // Añadir un espacio después del nuevo texto
-            }
+        // Reducir múltiples espacios a uno solo
+        transcript = transcript.replace(/\s{2,}/g, ' ');
 
-            // Reducir múltiples espacios a uno solo
-            transcript = transcript.replace(/\s{2,}/g, ' ');
+        // Insertar el texto, reemplazando la selección si existe
+        targetElement.value = beforeText + transcript + afterText;
 
-            // Insertar el texto, reemplazando la selección si existe
-            targetElement.value = beforeText + transcript + afterText;
+        // Ajustar la posición del cursor al final del texto insertado
+        targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
 
-            // Ajustar la posición del cursor al final del texto insertado
-            targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
-
-            if (targetElementId === 'freeTextInput') {
-                const question = questions[currentQuestion];
-                answers[question.id] = targetElement.value.trim();
-            }
-
-            updatePreview();
-        };
+        if (targetElementId === 'freeTextInput') {
+            const question = questions[currentQuestion];
+            answers[question.id] = targetElement.value.trim();
+        }
+        updatePreview();
+    };
 
         recognition.onerror = function(event) {
             console.error('Speech recognition error:', event.error);
