@@ -430,8 +430,8 @@ function toggleDictation(targetElementId) {
             transcript = transcript.replace(/\bpunto\b/gi, '.');
 
             // Eliminar espacios antes de los signos de puntuación y asegurar espacio después
-            transcript = transcript.replace(/\s*([,.])/g, '$1');  // Elimina espacios antes de "," y "."
-            transcript = transcript.replace(/([,.])(?=\S)/g, '$1 ');  // Asegura espacio después de "," y "."
+            transcript = transcript.replace(/\s*([,.])/, '$1');  // Elimina espacios antes de "," y "."
+            transcript = transcript.replace(/([,.])(?=\S)/, '$1 ');  // Asegura espacio después de "," y "."
 
             // Capitalizar la primera letra después de cada punto o salto de línea
             transcript = transcript.replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => {
