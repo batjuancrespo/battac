@@ -170,6 +170,15 @@
     height: 100px;
     margin-bottom: 10px;
   }
+   /* Color de fondo por defecto */
+  .textarea-default {
+    background-color: #fff;
+  }
+
+  /* Color de fondo cuando el dictado está activo */
+  .textarea-dictating {
+    background-color: #b9fbc0; /* Verde claro */
+  }
 </style>
 </head>
 <body>
@@ -291,57 +300,65 @@ let answers = {};
 let recognition;
 let isRecognitionActive = false;
 
+
+function setupFreeTextObservers() {
+    const freeTextInput = document.getElementById('freeTextInput');
+    if (freeTextInput) {
+        freeTextInput.addEventListener('input', () => {
+            const question = questions[currentQuestion];
+            if (question && question.allowFreeText) {
+                answers[question.id] = freeTextInput.value.trim();
+                updatePreview();  // Actualiza la vista previa del informe en tiempo real
+            }
+        });
+    }
+}
+
 function displayQuestion() {
-  const question = questions[currentQuestion];
+    const question = questions[currentQuestion];
 
-  if (question.condition && !question.condition(answers)) {
-    nextQuestion();
-    return;
-  }
+    if (question.condition && !question.condition(answers)) {
+        nextQuestion();
+        return;
+    }
 
-  if (answers.type === "Torácica" && question.category === "abdomen") {
-    nextQuestion();
-    return;
-  }
-  if (answers.type === "Abdominal" && question.category === "thorax" && question.id !== "lungBases") {
-    nextQuestion();
-    return;
-  }
+    const questionContainer = document.getElementById('questions');
+    questionContainer.innerHTML = '';
 
-  const questionContainer = document.getElementById('questions');
-  questionContainer.innerHTML = '';
+    const questionElement = document.createElement('div');
+    questionElement.className = 'question';
+    questionElement.innerHTML = `<h2>${question.text}</h2>`;
 
-  const questionElement = document.createElement('div');
-  questionElement.className = 'question';
-  questionElement.innerHTML = `<h2>${question.text}</h2>`;
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options-container';
 
-  const optionsContainer = document.createElement('div');
-  optionsContainer.className = 'options-container';
+    question.options.forEach(option => {
+        const button = document.createElement('button');
+        button.textContent = option;
+        button.onclick = () => selectOption(option);
+        optionsContainer.appendChild(button);
+    });
 
-  question.options.forEach(option => {
-    const button = document.createElement('button');
-    button.textContent = option;
-    button.onclick = () => selectOption(option);
-    optionsContainer.appendChild(button);
-  });
+    questionElement.appendChild(optionsContainer);
 
-  questionElement.appendChild(optionsContainer);
+    if (question.allowFreeText) {
+        const freeTextContainer = document.createElement('div');
+        freeTextContainer.className = 'free-text-container';
+        freeTextContainer.innerHTML = `
+            <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
+            <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
+            <button id="correctButton" onclick="correctText('freeTextInput')">Corregir</button>
+        `;
+        questionElement.appendChild(freeTextContainer);
 
-  if (question.allowFreeText) {
-      const freeTextContainer = document.createElement('div');
-      freeTextContainer.className = 'free-text-container';
-      freeTextContainer.innerHTML = `
-          <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
-          <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
-          <button id="correctButton" onclick="correctText('freeTextInput')">Corregir</button>
-      `;
-      questionElement.appendChild(freeTextContainer);
-  }
+    }
 
-  questionContainer.appendChild(questionElement);
+    questionContainer.appendChild(questionElement);
 
-  updateNavigationButtons();
-  updatePreview();
+    // Configura el observador de cambios para el área de texto libre
+    setupFreeTextObservers();
+    updateNavigationButtons();
+    updatePreview();  // Actualiza la vista previa al mostrar la pregunta
 }
 
 function selectOption(option) {
@@ -353,7 +370,7 @@ function selectOption(option) {
   } else {
     answers[question.id] = option;
   }
-
+  updatePreview();
   nextQuestion();
 }
 
@@ -369,6 +386,18 @@ if (question.allowFreeText) {
     questionElement.appendChild(freeTextContainer);
 }
 
+function updatePreview() {
+    const previewText = document.getElementById('previewText');
+    if (previewText) {
+        previewText.innerHTML = generateReport().replace(/\n/g, '<br>');
+    } else {
+        console.error('Element with id "previewText" not found');
+    }
+}
+
+
+
+
 function correctText(targetElementId) {
     const targetElement = document.getElementById(targetElementId);
     if (!targetElement) {
@@ -385,13 +414,35 @@ function correctText(targetElementId) {
 
             // Almacenar la corrección (opcional)
             localStorage.setItem(`correction_${selectedText}`, correction);
+
+            // Actualiza el texto en las respuestas y en la vista previa
+            const question = questions[currentQuestion];
+            if (question && question.allowFreeText) {
+                answers[question.id] = targetElement.value.trim();
+                updatePreview();  // Actualiza la vista previa del informe
+            }
         }
     } else {
         alert("Por favor selecciona el texto que deseas corregir.");
     }
-
-    updatePreview();  // Actualiza la vista previa del informe
 }
+
+function setDictationState(targetElementId, isDictating) {
+    const targetElement = document.getElementById(targetElementId);
+    if (targetElement) {
+        if (isDictating) {
+            targetElement.classList.add('textarea-dictating');
+            targetElement.classList.remove('textarea-default');
+        } else {
+            targetElement.classList.add('textarea-default');
+            targetElement.classList.remove('textarea-dictating');
+        }
+    }
+}
+
+
+
+
 
 function toggleDictation(targetElementId) {
     if (!recognition) {
@@ -404,106 +455,63 @@ function toggleDictation(targetElementId) {
 
     if (isRecognitionActive) {
         recognition.stop();
+        setDictationState(targetElementId, false); // Cambia el color de fondo
         isRecognitionActive = false;
         console.log('Recognition stopped');
     } else {
-    recognition.onresult = function(event) {
-        const targetElement = document.getElementById(targetElementId);
-        let transcript = event.results[event.results.length - 1][0].transcript;
-        // Aplicar corrección almacenada si existe
-        const storedCorrection = localStorage.getItem(`correction_${transcript}`);
-        if (storedCorrection) {
-            transcript = storedCorrection;
-        }
-        const selectionStart = targetElement.selectionStart;
-        const selectionEnd = targetElement.selectionEnd;
-        const beforeText = targetElement.value.slice(0, selectionStart);
-        const afterText = targetElement.value.slice(selectionEnd);
+        recognition.onresult = function(event) {
+            const targetElement = document.getElementById(targetElementId);
+            let transcript = event.results[event.results.length - 1][0].transcript;
+            // Aplicar corrección almacenada si existe
+            const storedCorrection = localStorage.getItem(`correction_${transcript}`);
+            if (storedCorrection) {
+                transcript = storedCorrection;
+            }
+            const selectionStart = targetElement.selectionStart;
+            const selectionEnd = targetElement.selectionEnd;
+            const beforeText = targetElement.value.slice(0, selectionStart);
+            const afterText = targetElement.value.slice(selectionEnd);
 
-        // Reemplazar "punto y aparte" por ".\n" para salto de línea
-        transcript = transcript.replace(/\bpunto y aparte\b/g, '.\n');
+            // Reemplazos y formateo
+            transcript = transcript.replace(/\bpunto y aparte\b/g, '.\n')
+                                   .replace(/\bcoma\b/g, ',')
+                                   .replace(/\bpunto\b/g, '.')
+                                   .replace(/\s*([,.])/g, '$1 ')
+                                   .replace(/\. \n/g, '.\n')
+                                   .replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => '. ' + p1.toUpperCase())
+                                   .replace(/\s{2,}/g, ' ');
 
-        //  Reemplazar "Coma" por "," y "punto" por "."
-        transcript = transcript.replace(/\bcoma\b/g, ',');
-        transcript = transcript.replace(/\bpunto\b/g, '.');
+            if (beforeText.trim() === '' || beforeText.trim().endsWith('.')) {
+                transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+            }
+            if (beforeText && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') && !/[,.]\s*$/.test(beforeText)) {
+                transcript = ' ' + transcript;
+            }
+            if (afterText && !afterText.startsWith(' ') && !/^[,.]/.test(afterText)) {
+                transcript += ' ';
+            }
 
-        // Asegurar que no haya espacios antes de los signos de puntuación y que haya un espacio después
-        transcript = transcript.replace(/\s*([,.])/g, '$1 ').trim();
+            targetElement.value = beforeText + transcript + afterText;
+            targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
 
-        // Eliminar el espacio extra después de un punto seguido de un salto de línea
-        transcript = transcript.replace(/\. \n/g, '.\n');
-
-        // Capitalizar la primera letra después de cada punto o salto de línea
-        transcript = transcript.replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => {
-            return '. ' + p1.toUpperCase();
-        });
-
-        // Capitalizar la primera palabra si es el comienzo del texto o después de un punto
-        if (beforeText.trim() === '' || beforeText.trim().endsWith('.')) {
-            transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
-        }
-
-        // Detectar si el texto antes de la selección termina en una palabra y no en un signo de puntuación
-        if (beforeText && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') && !/[,.]\s*$/.test(beforeText)) {
-            transcript = ' ' + transcript; // Añadir un espacio antes del nuevo texto
-        }
-
-        // Detectar si el texto después de la selección comienza con una palabra
-        if (afterText && !afterText.startsWith(' ') && !/^[,.]/.test(afterText)) {
-            transcript += ' '; // Añadir un espacio después del nuevo texto
-        }
-
-        // Reducir múltiples espacios a uno solo
-        transcript = transcript.replace(/\s{2,}/g, ' ');
-
-        // Insertar el texto, reemplazando la selección si existe
-        targetElement.value = beforeText + transcript + afterText;
-
-        // Ajustar la posición del cursor al final del texto insertado
-        targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
-
-        if (targetElementId === 'freeTextInput') {
-            const question = questions[currentQuestion];
-            answers[question.id] = targetElement.value.trim();
-        }
-        updatePreview();
-    };
+            if (targetElementId === 'freeTextInput') {
+                const question = questions[currentQuestion];
+                answers[question.id] = targetElement.value.trim();
+            }
+            updatePreview();
+        };
 
         recognition.onerror = function(event) {
             console.error('Speech recognition error:', event.error);
         };
 
         recognition.start();
+        setDictationState(targetElementId, true); // Cambia el color de fondo
         isRecognitionActive = true;
         console.log('Recognition started');
     }
 }
 
-
-
-function correctText(targetElementId) {
-    const targetElement = document.getElementById(targetElementId);
-    if (!targetElement) {
-        console.error('Target element not found:', targetElementId);
-        return;
-    }
-
-    const selectedText = targetElement.value.substring(targetElement.selectionStart, targetElement.selectionEnd);
-
-    if (selectedText) {
-        const correction = prompt("¿Qué es lo que querías decir?", selectedText);
-        if (correction !== null) {
-            targetElement.setRangeText(correction, targetElement.selectionStart, targetElement.selectionEnd, 'end');
-
-            // Almacenar la corrección (opcional)
-            localStorage.setItem(`correction_${selectedText}`, correction);
-        }
-    } else {
-        alert("Por favor selecciona el texto que deseas corregir.");
-    }
-
-    updatePreview();  // Actualiza la vista previa del informe
-}
 
 
 
@@ -553,40 +561,40 @@ function showFinalReport() {
 }
 
 function generateReport() {
-  let report = '';
+    let report = '';
 
-  if (answers.type && answers.contrast) {
-    const tacType = answers.type.toLowerCase();
-    const contrastUsed = answers.contrast === 'Sí' ? 'tras' : 'sin';
-    const contrastPhase = answers.contrast === 'Sí' && answers.contrastPhase ? ` con adquisición de imágenes en fase ${answers.contrastPhase.toLowerCase()}` : '';
+    if (answers.type && answers.contrast) {
+        const tacType = answers.type.toLowerCase();
+        const contrastUsed = answers.contrast === 'Sí' ? 'tras' : 'sin';
+        const contrastPhase = answers.contrast === 'Sí' && answers.contrastPhase ? ` con adquisición de imágenes en fase ${answers.contrastPhase.toLowerCase()}` : '';
 
-    report += `Se realiza exploración ${tacType} ${contrastUsed} la administración endovenosa de contraste${contrastPhase}.\n\n`;
-  }
-
-  const thoraxQuestions = questions.filter(q => q.category === 'thorax');
-  const abdominalQuestions = questions.filter(q => q.category === 'abdomen');
-
-  if (answers.type === 'Torácica' || answers.type === 'Toracoabdominal') {
-    thoraxQuestions.forEach(q => {
-      if (answers[q.id]) {
-        report += `${answers[q.id]}\n`;
-      }
-    });
-  }
-
-  if (answers.type === 'Abdominal' || answers.type === 'Toracoabdominal') {
-    if (answers.lungBases) {
-      report += `${answers.lungBases}\n`;
+        report += `Se realiza exploración ${tacType} ${contrastUsed} la administración endovenosa de contraste${contrastPhase}.\n\n`;
     }
-    abdominalQuestions.forEach(q => {
-      if (answers[q.id] && q.id !== 'lungBases') {
-        report += `${answers[q.id]}\n`;
-      }
-    });
-    report += '\n';
-  }
 
-  return report;
+    const thoraxQuestions = questions.filter(q => q.category === 'thorax');
+    const abdominalQuestions = questions.filter(q => q.category === 'abdomen');
+
+    if (answers.type === 'Torácica' || answers.type === 'Toracoabdominal') {
+        thoraxQuestions.forEach(q => {
+            if (answers[q.id]) {
+                report += `${answers[q.id]}\n`;
+            }
+        });
+    }
+
+    if (answers.type === 'Abdominal' || answers.type === 'Toracoabdominal') {
+        if (answers.lungBases) {
+            report += `${answers.lungBases}\n`;
+        }
+        abdominalQuestions.forEach(q => {
+            if (answers[q.id] && q.id !== 'lungBases') {
+                report += `${answers[q.id]}\n`;
+            }
+        });
+        report += '\n';
+    }
+
+    return report;
 }
 
 function saveReport() {
