@@ -232,66 +232,146 @@ const questions = [
   },
   {
     id: 'lungBases',
-    text: "¿Cómo se observan las bases pulmonares?",
-    options: ["Normales", "Atelectasias", "Infiltrados", "Otro"],
+    text: '¿Cómo son las bases pulmonares?',
+    options: ['Normal o normales', 'Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente', 'Significativo derrame pleural ... de unos .... cm de grosor máximo.'],
     category: "abdomen",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Abdominal'
   },
   {
-    id: 'lungs',
-    text: "¿Cómo se observan los pulmones?",
-    options: ["Normales", "Nódulos", "Infiltrados", "Atelectasias", "Enfisema", "Otro"],
+    id: 'mediastinicVascular',
+    text: 'Describa las estructuras mediastínicas vasculares:',
+    options: ['Normales', 'Cardiomegalia'],
     category: "thorax",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Torácica'
   },
   {
-    id: 'pleura',
-    text: "¿Hay alteraciones pleurales?",
-    options: ["No", "Derrame", "Engrosamiento", "Neumotórax", "Otro"],
+    id: 'mediastinicAdenopathy',
+    text: '¿Existe adenopatías mediastínicas?',
+    options: ['No', 'Pequeñas inespecíficas'],
     category: "thorax",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Torácica'
   },
   {
-    id: 'mediastinum',
-    text: "¿Cómo se observa el mediastino?",
-    options: ["Normal", "Adenopatías", "Masas", "Ensanchamiento", "Otro"],
+    id: 'lungParenchyma',
+    text: 'Describa el parénquima pulmonar:',
+    options: ['Normal o normales', 'Parénquima pulmonar de aspecto enfisematoso', 'Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.'],
     category: "thorax",
-    allowFreeText: true
-  },
-  {
-    id: 'heart',
-    text: "¿Cómo se observa el corazón?",
-    options: ["Normal", "Cardiomegalia", "Calcificaciones coronarias", "Derrame pericárdico", "Otro"],
-    category: "thorax",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Torácica'
   },
   {
     id: 'liver',
-    text: "¿Cómo se observa el hígado?",
-    options: ["Normal", "Lesiones focales", "Hepatomegalia", "Cirrosis", "Esteatosis", "Otro"],
+    text: 'Describa el hígado:',
+    options: ['Normal', 'Con rasgos de hepatopatía crónica', 'Esteatosis'],
     category: "abdomen",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'loes',
+    text: 'Existen LOES hepáticas?',
+    options: ['No'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'gallbladderBileDuct',
+    text: 'Describa la vesícula y vía biliar:',
+    options: ['Normal o normales', 'Colelitiasis sin dilatación de la via biliar', 'Colecistectomía sin dilatación de vía biliar'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
   },
   {
     id: 'pancreas',
-    text: "¿Cómo se observa el páncreas?",
-    options: ["Normal", "Lesiones focales", "Inflamación", "Atrofia", "Otro"],
+    text: 'Describa el páncreas:',
+    options: ['Normal', 'Rasgos de pancreatopatía crónica'],
     category: "abdomen",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
   },
   {
     id: 'spleen',
-    text: "¿Cómo se observa el bazo?",
-    options: ["Normal", "Esplenomegalia", "Lesiones focales", "Otro"],
+    text: 'Describa el bazo:',
+    options: ['Normal', 'Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.'],
     category: "abdomen",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'adrenalGlands',
+    text: 'Describa las glándulas suprarrenales:',
+    options: ['Normal o normales', 'Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.', 'Hiperplasia adrenal bilateral'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
   },
   {
     id: 'kidneys',
-    text: "¿Cómo se observan los riñones?",
-    options: ["Normales", "Litiasis", "Quistes", "Masas", "Hidronefrosis", "Otro"],
+    text: 'Describa los riñones:',
+    options: ['Normal o normales', 'Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.'],
     category: "abdomen",
-    allowFreeText: true
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'estomago',
+    text: 'Describa la cámara gástrica:',
+    options: ['Normal', 'Pobremente distendida'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'idelgado',
+    text: 'Describa las asas de intestino delgado:',
+    options: ['Normales', 'Se aprecian suturas'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'igrueso',
+    text: 'Describa el marco cólico:',
+    options: ['Normal', 'Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'freeFluid',
+    text: '¿Hay líquido libre intra-abdominal o adenopatías?',
+    options: ['No'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'aortoiliacAxis',
+    text: 'Describa el eje aorto-ilíaco:',
+    options: ['Normal', 'Ateromatosis aorto-iliaca calcificada difusa', 'Dilatación aneurismática de aorta abdominal infrarrenal de ... cm'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'axialSkeleton',
+    text: 'Describa el esqueleto axial incluido en el estudio:',
+    options: ['Sin hallazgos de interés', 'Cambios degenerativos'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'impression',
+    text: 'Impresión diagnóstica:',
+    options: ['Sin hallazgos de interés', 'Similar a previos', 'Ver informe descriptivo'],
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal' || answers.type === 'Torácica'
   }
 ];
 
@@ -300,65 +380,63 @@ let answers = {};
 let recognition;
 let isRecognitionActive = false;
 
-
 function setupFreeTextObservers() {
-    const freeTextInput = document.getElementById('freeTextInput');
-    if (freeTextInput) {
-        freeTextInput.addEventListener('input', () => {
-            const question = questions[currentQuestion];
-            if (question && question.allowFreeText) {
-                answers[question.id] = freeTextInput.value.trim();
-                updatePreview();  // Actualiza la vista previa del informe en tiempo real
-            }
-        });
-    }
+  const freeTextInput = document.getElementById('freeTextInput');
+  if (freeTextInput) {
+    freeTextInput.addEventListener('input', () => {
+      const question = questions[currentQuestion];
+      if (question && question.allowFreeText) {
+        answers[question.id] = freeTextInput.value.trim();
+        updatePreview();  // Actualiza la vista previa del informe en tiempo real
+      }
+    });
+  }
 }
 
 function displayQuestion() {
-    const question = questions[currentQuestion];
+  const question = questions[currentQuestion];
 
-    if (question.condition && !question.condition(answers)) {
-        nextQuestion();
-        return;
-    }
+  if (question.condition && !question.condition(answers)) {
+    nextQuestion();
+    return;
+  }
 
-    const questionContainer = document.getElementById('questions');
-    questionContainer.innerHTML = '';
+  const questionContainer = document.getElementById('questions');
+  questionContainer.innerHTML = '';
 
-    const questionElement = document.createElement('div');
-    questionElement.className = 'question';
-    questionElement.innerHTML = `<h2>${question.text}</h2>`;
+  const questionElement = document.createElement('div');
+  questionElement.className = 'question';
+  questionElement.innerHTML = `<h2>${question.text}</h2>`;
 
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'options-container';
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'options-container';
 
-    question.options.forEach(option => {
-        const button = document.createElement('button');
-        button.textContent = option;
-        button.onclick = () => selectOption(option);
-        optionsContainer.appendChild(button);
-    });
+  question.options.forEach(option => {
+    const button = document.createElement('button');
+    button.textContent = option;
+    button.onclick = () => selectOption(option);
+    optionsContainer.appendChild(button);
+  });
 
-    questionElement.appendChild(optionsContainer);
+  questionElement.appendChild(optionsContainer);
 
-    if (question.allowFreeText) {
-        const freeTextContainer = document.createElement('div');
-        freeTextContainer.className = 'free-text-container';
-        freeTextContainer.innerHTML = `
-            <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
-            <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
-            <button id="correctButton" onclick="correctText('freeTextInput')">Corregir</button>
-        `;
-        questionElement.appendChild(freeTextContainer);
+  if (question.allowFreeText) {
+    const freeTextContainer = document.createElement('div');
+    freeTextContainer.className = 'free-text-container';
+    freeTextContainer.innerHTML = `
+      <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
+      <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
+      <button id="correctButton" onclick="correctText('freeTextInput')">Corregir</button>
+    `;
+    questionElement.appendChild(freeTextContainer);
 
-    }
 
-    questionContainer.appendChild(questionElement);
+  }
 
-    // Configura el observador de cambios para el área de texto libre
-    setupFreeTextObservers();
-    updateNavigationButtons();
-    updatePreview();  // Actualiza la vista previa al mostrar la pregunta
+  questionContainer.appendChild(questionElement);
+  setupFreeTextObservers(); // Setup the observer after the textarea is added to the DOM
+  updateNavigationButtons();
+  updatePreview();  // Actualiza la vista previa al mostrar la pregunta
 }
 
 function selectOption(option) {
@@ -574,28 +652,244 @@ function generateReport() {
     const thoraxQuestions = questions.filter(q => q.category === 'thorax');
     const abdominalQuestions = questions.filter(q => q.category === 'abdomen');
 
-    if (answers.type === 'Torácica' || answers.type === 'Toracoabdominal') {
-        thoraxQuestions.forEach(q => {
-            if (answers[q.id]) {
-                report += `${answers[q.id]}\n`;
-            }
-        });
-    }
+    
+    
+    
+    
+    
+    
+    
 
-    if (answers.type === 'Abdominal' || answers.type === 'Toracoabdominal') {
-        if (answers.lungBases) {
-            report += `${answers.lungBases}\n`;
-        }
-        abdominalQuestions.forEach(q => {
-            if (answers[q.id] && q.id !== 'lungBases') {
-                report += `${answers[q.id]}\n`;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+
+      questions.forEach((question) => {
+        if (answers[question.id]) {
+          if (question.id === 'mediastinicVascular') {
+            if (answers[question.id] === 'Normales') {
+              report += `\nEstructuras mediastínicas vasculares sin hallazgos morfológicos relevantes.`;
+            } else if (answers[question.id] === 'Cardiomegalia') {
+              report += `\nCardiomegalia. Resto de estructuras mediastínicas vasculares sin hallazgos morfológicos relevantes.`;
+            } else {
+             report += `\n${postProcessText(answers[question.id])}`;
             }
-        });
-        report += '\n';
-    }
+          } else if (question.id === 'mediastinicAdenopathy') {
+            if (answers[question.id] === 'No') {
+              report += `\nNo se aprecian adenopatías mediastínicas de aspecto patológico.`;
+            } else if (answers[question.id] === 'Pequeñas inespecíficas') {
+              report += `\nPequeñas formaciones ganglionares mediastínicas de tamaño no significativo.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'lungParenchyma') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nParénquima pulmonar sin imágenes nodulares ni aumentos de densidad sugestivos de afectación patológica.`;
+            } else if (answers[question.id] === 'Parénquima pulmonar de aspecto enfisematoso') {
+              report += `\nParénquima pulmonar de aspecto enfisematoso sin claras imágenes nodulares ni aumentos de densidad sugestivos de afectación patológica.`;
+            } else if (answers[question.id] === 'Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.') {
+              report += `\nTractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+
+
+
+
+
+          } else if (question.id === 'lungBases') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nBases pulmonares incluidas en el estudio sin hallazgos morfológicos relevantes.`;
+            } else if (answers[question.id] === 'Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente') {
+              report += `\nDiscreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente.`;
+            } else if (answers[question.id] === 'Significativo derrame pleural ... de unos .... cm de grosor máximo.') {
+              report += `\nSignificativo derrame pleural ... de unos .... cm de grosor máximo.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+
+
+
+
+
+
+          } else if (question.id === 'liver') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nEl hígado es de bordes lisos y densidad homogénea.`;
+            } else if (answers[question.id] === 'Con rasgos de hepatopatía crónica') {
+              report += `\nEl hígado es de contornos lobulados con parenquima discretamente granular en relación con rasgos de hepatopatía crónica.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'loes') {
+            if (answers[question.id] === 'No') {
+              report += ` No se identifican lesiones ocupantes de espacio.`;
+            } else {
+              report += ` ${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'gallbladderBileDuct') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nLa vesícula biliar y la vía biliar son normales.`;
+            } else if (answers[question.id] === 'Colelitiasis sin dilatación de la via biliar') {
+              report += `\nLa vesícula biliar muestra residuos litiásicos en su luz. Vía biliar intra y extrahepática no dilatada.`;
+            } else if (answers[question.id] === 'Colecistectomía sin dilatación de vía biliar') {
+              report += `\nColecistectomía. Vía biliar intra y extrahepática no dilatada.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'pancreas') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nGlándula pancreática sin lesiones focales ni dilatación del ducto pancreático principal.`;
+            } else if (answers[question.id] === 'Rasgos de pancreatopatía crónica') {
+              report += `\nEl páncreas muestra rasgos de pancreatopatía crónica, con una glándula de aspecto discretamente atrófico y pequeños focos de calcificación.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'spleen') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nBazo de normal tamaño y morfología.`;
+            } else if (answers[question.id] === 'Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.') {
+              report += `\nBazo aumentado de tamaño con un diámetro longitudinal de ... cm.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'adrenalGlands') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nGlándulas suprarrenales sin hallazgos relevantes.`;
+            } else if (answers[question.id] === 'Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.') {
+              report += `\nGlándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.`;
+            } else if (answers[question.id] === 'Hiperplasia adrenal bilateral') {
+              report += `\nGlándulas suprarrenales de aspecto hiperplásico bilateralmente.`;
+            } else {
+              rport += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'kidneys') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nRiñones con buena diferenciación cortico-medular sin lesiones focales.`;
+            } else if (answers[question.id] === 'Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.') {
+              report += `\nRiñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'estomago') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nCámara gástrica moderadamente distendida sin que se identifiquen engrosamientos parietales.`;
+            } else if (answers[question.id] === 'Pobremente distendida') {
+              report += `\nCámara gástrica pobremente distendida sin que se definan claros engrosamientos parietales mediante esta técnica diagnóstica.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'idelgado') {
+            if (answers[question.id] === 'Normales') {
+              report += `\nAsas de delgado sin claros engrosamientos parietales ni cambios de calibre significativos.`;
+            } else if (answers[question.id] === 'Se aprecian suturas') {
+              report += `\nSe identifican suturas en ... de morfología conservada.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'igrueso') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nMarco cólico de normal calibre y morfología sin claros engrosamientos parietales ni cambios de calibre significativos.`;
+            } else if (answers[question.id] === 'Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.') {
+              report += `\nSe identifican divertículos en ... sin signos de complicaciones agudas asociadas.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'freeFluid') {
+            if (answers[question.id] === 'No') {
+              report += `\nNo se objetiva líquido libre ni adenopatías intra-abdominales de aspecto patológico.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'aortoiliacAxis') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nEje aortoíliaco sin alteraciones significativas.`;
+            } else if (answers[question.id] === 'Ateromatosis aorto-iliaca calcificada difusa') {
+              report += `\nAteromatosis aorto-iliaca calcificada difusa.`;
+            } else if (answers[question.id] === 'Dilatación aneurismática de aorta abdominal infrarrenal de ... cm') {
+              report += `\nDilatación aneurismática de aorta abdominal infrarrenal de ... cm.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'axialSkeleton') {
+            if (answers[question.id] === 'Sin hallazgos de interés') {
+              report += `\nEsqueleto axial sin hallazgos relevantes.`;
+            } else if (answers[question.id] === 'Cambios degenerativos') {
+              report += `\nCambios degenerativos en esqueleto axial.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'impression') {
+            if (answers[question.id] === 'Sin hallazgos de interés') {
+              report += `\n\nSin hallazgos de interés.`;
+            } else if (answers[question.id] === 'Similar a previos') {
+              report += `\n\nExploración similar a últimos controles de imagen.`;
+            } else if (answers[question.id] === 'Ver informe descriptivo') {
+              report += `\n\nVer informe descriptivo.`;
+            } else {
+              report += `\n\n${postProcessText(answers[question.id])}`;
+            }
+           
+           
+           
+           
+          }
+        }
+      });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     return report;
 }
+
+
+function postProcessText(text) {
+ // Capitalizar la primera letra de cada oración
+ text = text.replace(/(^\w|\.\s+\w)/g, match => match.toUpperCase());
+
+ // Asegurar que hay un espacio después de cada punto
+ text = text.replace(/\.(\w)/g, '. $1');
+
+ // Capitalizar nombres propios comunes en informes médicos
+ const properNouns = ['TC', 'TAC', 'RMN', 'PET', 'ECG'];
+ properNouns.forEach(noun => {
+   const regex = new RegExp(`\\b${noun.toLowerCase()}\\b`, 'g');
+   text = text.replace(regex, noun);
+ });
+
+ return text;
+}
+
 
 function saveReport() {
   const finalReport = document.getElementById('finalReportText').value;
