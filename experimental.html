@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictado Radiológico Asistido por IA - Versión Mejorada</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #45a049;
+            --background-color: #f4f4f4;
+            --text-color: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        textarea, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 200px;
+            resize: vertical;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        #status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        #vocabulario, #apiKeySection, #sugerencias {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        .suggestion {
+            text-decoration: underline;
+            cursor: pointer;
+            color: blue;
+        }
+        #sugerencias button {
+            margin: 5px;
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+        #microfono {
+            font-size: 24px;
+            padding: 10px 20px;
+        }
+        #microfono.activo {
+            background-color: #ff4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dictado Radiológico Asistido por IA</h1>
+        <textarea id="informe" placeholder="El informe aparecerá aquí..."></textarea>
+        <div id="sugerencias">
+            <h3>Sugerencias de frases habituales</h3>
+            <!-- Las sugerencias se añadirán aquí dinámicamente -->
+        </div>
+        <button id="microfono">🎤 Iniciar Dictado</button>
+        <button id="limpiarInforme">Limpiar Informe</button>
+        <button id="mejorarIA">Mejorar con IA</button>
+        <p id="status"></p>
+        
+        <div id="vocabulario">
+            <h3>Agregar Vocabulario Médico</h3>
+            <input type="text" id="nuevaPalabra" placeholder="Nueva palabra">
+            <button id="agregarPalabra">Agregar Palabra</button>
+            <div id="palabrasGuardadas"></div>
+        </div>
+
+        <div id="apiKeySection">
+            <h3>Configuración de API Merriam-Webster</h3>
+            <input type="password" id="apiKey" placeholder="Ingrese su clave API de Merriam-Webster">
+            <button id="guardarApiKey">Guardar Clave API</button>
+            <p>Para obtener una clave API gratuita, regístrese en <a href="https://dictionaryapi.com/register/index" target="_blank">Merriam-Webster Developer Center</a> y cree una nueva clave API para el Diccionario Médico.</p>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let vocabularioMedico = new Set(JSON.parse(localStorage.getItem('vocabularioMedico')) || []);
+        let apiKey = localStorage.getItem('merriamWebsterApiKey') || '';
+        let frasesHabituales = JSON.parse(localStorage.getItem('frasesHabituales')) || {};
+        let esDictando = false;
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'es-ES';
+
+            recognition.onstart = function() {
+                document.getElementById('microfono').classList.add('activo');
+                document.getElementById('microfono').textContent = '🎤 Pausar Dictado';
+                document.getElementById('status').textContent = 'Escuchando...';
+            };
+
+            recognition.onend = function() {
+                if (esDictando) {
+                    recognition.start();
+                } else {
+                    document.getElementById('microfono').classList.remove('activo');
+                    document.getElementById('microfono').textContent = '🎤 Iniciar Dictado';
+                    document.getElementById('status').textContent = 'Dictado pausado.';
+                }
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (finalTranscript) {
+                    const informe = document.getElementById('informe');
+                    const cursorPosition = informe.selectionStart;
+                    const textBeforeCursor = informe.value.substring(0, cursorPosition);
+                    const textAfterCursor = informe.value.substring(cursorPosition);
+                    
+                    finalTranscript = applyCapitalizationAndPunctuation(finalTranscript);
+                    informe.value = textBeforeCursor + finalTranscript + textAfterCursor;
+                    informe.selectionStart = informe.selectionEnd = cursorPosition + finalTranscript.length;
+
+                    aprenderFrases(finalTranscript);
+                    actualizarSugerencias();
+                }
+
+                document.getElementById('status').textContent = interimTranscript ? 'Transcribiendo: ' + interimTranscript : 'Escuchando...';
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error en el reconocimiento de voz:', event.error);
+                document.getElementById('status').textContent = 'Error en el reconocimiento: ' + event.error;
+                if (event.error === 'no-speech') {
+                    recognition.stop();
+                    setTimeout(() => {
+                        if (esDictando) recognition.start();
+                    }, 1000);
+                }
+            };
+        } else {
+            document.getElementById('status').textContent = 'El reconocimiento de voz no está soportado en este navegador.';
+        }
+
+        function applyCapitalizationAndPunctuation(text) {
+            text = text.trim();
+            text = text.replace(/(^\w|\.\s+\w)/g, match => match.toUpperCase());
+            if (!/[.!?]$/.test(text)) {
+                text += '.';
+            }
+            return text;
+        }
+
+        function aprenderFrases(texto) {
+            const frases = texto.match(/\b(\w+\s+){2,5}\w+\b/g) || [];
+            frases.forEach(frase => {
+                frasesHabituales[frase] = (frasesHabituales[frase] || 0) + 1;
+            });
+            localStorage.setItem('frasesHabituales', JSON.stringify(frasesHabituales));
+        }
+
+        function actualizarSugerencias() {
+            const sugerenciasDiv = document.getElementById('sugerencias');
+            sugerenciasDiv.innerHTML = '<h3>Sugerencias de frases habituales</h3>';
+            
+            const frasesOrdenadas = Object.entries(frasesHabituales)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            frasesOrdenadas.forEach(([frase, _]) => {
+                const boton = document.createElement('button');
+                boton.textContent = frase;
+                boton.onclick = () => insertarFrase(frase);
+                sugerenciasDiv.appendChild(boton);
+            });
+        }
+
+        function insertarFrase(frase) {
+            const informe = document.getElementById('informe');
+            const cursorPosition = informe.selectionStart;
+            const textBeforeCursor = informe.value.substring(0, cursorPosition);
+            const textAfterCursor = informe.value.substring(cursorPosition);
+            
+            informe.value = textBeforeCursor + frase + ' ' + textAfterCursor;
+            informe.setSelectionRange(cursorPosition + frase.length + 1, cursorPosition + frase.length + 1);
+            informe.focus();
+        }
+
+        document.getElementById('microfono').onclick = function() {
+            if (esDictando) {
+                esDictando = false;
+                recognition.stop();
+            } else {
+                esDictando = true;
+                recognition.start();
+            }
+        };
+
+        document.getElementById('limpiarInforme').onclick = function() {
+            document.getElementById('informe').value = '';
+            document.getElementById('status').textContent = 'Informe limpiado.';
+        };
+
+        document.getElementById('agregarPalabra').onclick = function() {
+            let nuevaPalabra = document.getElementById('nuevaPalabra').value.trim();
+            if (nuevaPalabra) {
+                vocabularioMedico.add(nuevaPalabra);
+                localStorage.setItem('vocabularioMedico', JSON.stringify([...vocabularioMedico]));
+                document.getElementById('nuevaPalabra').value = '';
+                actualizarPalabrasGuardadas();
+                document.getElementById('status').textContent = 'Palabra agregada: ' + nuevaPalabra;
+            }
+        };
+
+        function actualizarPalabrasGuardadas() {
+            let palabrasGuardadas = document.getElementById('palabrasGuardadas');
+            palabrasGuardadas.innerHTML = '<h4>Vocabulario guardado:</h4>';
+            vocabularioMedico.forEach(palabra => {
+                let span = document.createElement('span');
+                span.textContent = palabra + ' ';
+                palabrasGuardadas.appendChild(span);
+            });
+        }
+
+        document.getElementById('mejorarIA').onclick = async function() {
+            if (!apiKey) {
+                alert('Por favor, ingrese su clave API de Merriam-Webster antes de mejorar el informe.');
+                return;
+            }
+
+            let informe = document.getElementById('informe');
+            let texto = informe.value;
+
+            document.getElementById('status').textContent = 'Procesando con IA...';
+            
+            try {
+                const palabras = texto.match(/\b\w+\b/g);
+                let informeMejorado = texto;
+
+                for (const palabra of palabras) {
+                    if (!vocabularioMedico.has(palabra.toLowerCase())) {
+                        const url = `https://www.dictionaryapi.com/api/v3/references/medical/json/${encodeURIComponent(palabra)}?key=${apiKey}`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+
+                        if (data.length > 0 && typeof data[0] === 'object') {
+                            const definicion = data[0].shortdef ? data[0].shortdef[0] : null;
+                            if (definicion) {
+                                const regex = new RegExp(`\\b${palabra}\\b`, 'g');
+                                informeMejorado = informeMejorado.replace(regex, `<span class="highlight" title="${definicion}">${palabra}</span>`);
+                            }
+                        }
+                    }
+                }
+
+                informe.value = informeMejorado;
+                document.getElementById('status').textContent = 'Informe mejorado con definiciones médicas';
+            } catch (error) {
+                console.error('Error al procesar con IA:', error);
+                document.getElementById('status').textContent = 'Error al procesar con IA: ' + error.message;
+            }
+        };
+
+        document.getElementById('guardarApiKey').onclick = function() {
+            const newApiKey = document.getElementById('apiKey').value.trim();
+            if (newApiKey) {
+                apiKey = newApiKey;
+                localStorage.setItem('merriamWebsterApiKey', apiKey);
+                alert('Clave API guardada correctamente');
+            } else {
+                alert('Por favor, ingrese una clave API válida');
+            }
+        };
+
+        // Cargar la clave API guardada al iniciar
+        document.getElementById('apiKey').value = apiKey;
+
+        actualizarPalabrasGuardadas();
+        actualizarSugerencias();
+    </script>
+</body>
+</html>
