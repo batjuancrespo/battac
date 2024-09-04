@@ -922,6 +922,17 @@ window.onload = () => {
 function startFinalReportDictation() {
   toggleDictation('finalReportText');
 }
+  document.addEventListener('keydown', function(event) {
+  if (event.shiftKey && event.key.toLowerCase() === 'i' && event.metaKey) {
+    event.preventDefault();
+    const dictateButton = document.getElementById('dictateButton');
+    if (dictateButton) {
+      dictateButton.click();
+    } else {
+      console.log('Botón de dictado no encontrado');  
+    }
+  }
+});
 </script>
 </body>
 </html>
