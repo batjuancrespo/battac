@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dictado Radiológico Asistido por IA - Versión Mejorada</title>
+    <title>Dictado Radiológico Asistido por IA - Versión Corregida</title>
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -157,21 +157,27 @@
                     }
                 }
 
+                const informe = document.getElementById('informe');
+                const cursorPosition = informe.selectionStart;
+
                 if (finalTranscript) {
-                    const informe = document.getElementById('informe');
-                    const cursorPosition = informe.selectionStart;
+                    finalTranscript = applyCapitalizationAndPunctuation(finalTranscript);
                     const textBeforeCursor = informe.value.substring(0, cursorPosition);
                     const textAfterCursor = informe.value.substring(cursorPosition);
                     
-                    finalTranscript = applyCapitalizationAndPunctuation(finalTranscript);
                     informe.value = textBeforeCursor + finalTranscript + textAfterCursor;
-                    informe.selectionStart = informe.selectionEnd = cursorPosition + finalTranscript.length;
+                    const newCursorPosition = cursorPosition + finalTranscript.length;
+                    informe.setSelectionRange(newCursorPosition, newCursorPosition);
 
                     aprenderFrases(finalTranscript);
                     actualizarSugerencias();
                 }
 
-                document.getElementById('status').textContent = interimTranscript ? 'Transcribiendo: ' + interimTranscript : 'Escuchando...';
+                if (interimTranscript) {
+                    document.getElementById('status').textContent = 'Transcribiendo: ' + interimTranscript;
+                } else {
+                    document.getElementById('status').textContent = 'Escuchando...';
+                }
             };
 
             recognition.onerror = function(event) {
