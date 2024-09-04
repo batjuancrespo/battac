@@ -1,328 +1,927 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dictado Radiológico Asistido por IA - Versión Mejorada</title>
-    <style>
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #45a049;
-            --background-color: #f4f4f4;
-            --text-color: #333;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-        .container {
-            max-width: 1000px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        h1, h2, h3 {
-            color: var(--primary-color);
-        }
-        textarea, input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        textarea {
-            height: 200px;
-            resize: vertical;
-        }
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-        #status {
-            margin-top: 10px;
-            font-style: italic;
-            color: #666;
-        }
-        #vocabulario, #apiKeySection, #sugerencias {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-        }
-        .highlight {
-            background-color: yellow;
-        }
-        .suggestion {
-            text-decoration: underline;
-            cursor: pointer;
-            color: blue;
-        }
-        #sugerencias button {
-            margin: 5px;
-            padding: 5px 10px;
-            font-size: 0.9em;
-        }
-        #microfono {
-            font-size: 24px;
-            padding: 10px 20px;
-        }
-        #microfono.activo {
-            background-color: #ff4444;
-        }
-    </style>
+<html><head><base href="https://radiologos-info.com/tac-helper/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente de Informes TAC para Radiólogos con Vista Previa y Texto Libre</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .main-container {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+  }
+  .content-container {
+    flex: 3;
+    max-width: 75%;
+  }
+  .preview-container {
+    flex: 1;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: -5px 0 10px rgba(0,0,0,0.1);
+    max-width: 25%;
+    overflow-y: auto;
+  }
+  h1, h2 {
+    color: #2c3e50;
+    text-align: center;
+  }
+  .container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+    margin-bottom: 120px;
+  }
+  .question {
+    margin-bottom: 20px;
+  }
+  button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 20px 30px;
+    margin: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    font-size: 20px;
+    min-width: 200px;
+  }
+  button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  #report, #finalReport {
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+  }
+  textarea {
+    width: 100%;
+    height: 120px;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    resize: vertical;
+  }
+  #finalReportText {
+    height: 400px;
+  }
+  #finalReportContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  #finalReportContent {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.15);
+  }
+  #saveButton {
+    background-color: #2ecc71;
+  }
+  #saveButton:hover {
+    background-color: #27ae60;
+  }
+  #restartButton {
+    background-color: #f39c12;
+    display: none;
+  }
+  #restartButton:hover {
+    background-color: #d35400;
+  }
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .options-container button {
+    width: 80%;
+    margin: 10px 0;
+    padding: 20px 30px;
+    font-size: 24px;
+  }
+  .navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    padding: 15px 0;
+    box-shadow: 0 -5px 10px rgba(0,0,0,0.1);
+  }
+  #prevButton, #nextButton {
+    background-color: #95a5a6;
+    margin: 0 50px;
+  }
+  #prevButton:hover, #nextButton:hover {
+    background-color: #7f8c8d;
+  }
+  #previewText {
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  #dictateButton {
+    background-color: #e74c3c;
+  }
+  #dictateButton:hover {
+    background-color: #c0392b;
+  }
+  #dictationResult {
+    margin-top: 10px;
+    font-style: italic;
+  }
+  .free-text-container {
+    margin-top: 20px;
+  }
+  .free-text-container textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+  }
+   /* Color de fondo por defecto */
+  .textarea-default {
+    background-color: #fff;
+  }
+
+  /* Color de fondo cuando el dictado está activo */
+  .textarea-dictating {
+    background-color: #b9fbc0; /* Verde claro */
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Dictado Radiológico Asistido por IA</h1>
-        <textarea id="informe" placeholder="El informe aparecerá aquí..."></textarea>
-        <div id="sugerencias">
-            <h3>Sugerencias de frases habituales</h3>
-            <!-- Las sugerencias se añadirán aquí dinámicamente -->
-        </div>
-        <button id="microfono">🎤 Iniciar Dictado</button>
-        <button id="limpiarInforme">Limpiar Informe</button>
-        <button id="mejorarIA">Mejorar con IA</button>
-        <p id="status"></p>
-        
-        <div id="vocabulario">
-            <h3>Agregar Vocabulario Médico</h3>
-            <input type="text" id="nuevaPalabra" placeholder="Nueva palabra">
-            <button id="agregarPalabra">Agregar Palabra</button>
-            <div id="palabrasGuardadas"></div>
-        </div>
+  <div class="main-container">
+    <div class="content-container">
+      <div class="container">
+        <h1>Asistente de Informes TAC para Radiólogos</h1>
+        <div id="questions"></div>
+        <div id="report"></div>
+      </div>
 
-        <div id="apiKeySection">
-            <h3>Configuración de API Merriam-Webster</h3>
-            <input type="password" id="apiKey" placeholder="Ingrese su clave API de Merriam-Webster">
-            <button id="guardarApiKey">Guardar Clave API</button>
-            <p>Para obtener una clave API gratuita, regístrese en <a href="https://dictionaryapi.com/register/index" target="_blank">Merriam-Webster Developer Center</a> y cree una nueva clave API para el Diccionario Médico.</p>
+      <div id="finalReportContainer">
+        <div id="finalReportContent">
+          <h2>Edición Final del Informe</h2>
+          <textarea id="finalReportText" rows="20"></textarea>
+          <button id="dictateFinalReportButton" onclick="startFinalReportDictation()">Dictar Informe Final</button>
+          <button id="saveButton" onclick="saveReport()">Guardar y Copiar Informe</button>
+          <button id="restartButton" onclick="restartQuestionnaire()" style="display: none;">Reiniciar</button>
         </div>
+      </div>
     </div>
 
-    <script>
-        let recognition;
-        let vocabularioMedico = new Set(JSON.parse(localStorage.getItem('vocabularioMedico')) || []);
-        let apiKey = localStorage.getItem('merriamWebsterApiKey') || '';
-        let frasesHabituales = JSON.parse(localStorage.getItem('frasesHabituales')) || {};
-        let esDictando = false;
+    <div class="preview-container">
+      <h2>Vista Previa del Informe</h2>
+      <div id="previewText"></div>
+    </div>
+  </div>
 
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'es-ES';
+  <div class="navigation-buttons">
+    <button id="prevButton" onclick="previousQuestion()">Anterior</button>
+    <button id="nextButton" onclick="nextQuestion()">Siguiente</button>
+  </div>
 
-            recognition.onstart = function() {
-                document.getElementById('microfono').classList.add('activo');
-                document.getElementById('microfono').textContent = '🎤 Pausar Dictado';
-                document.getElementById('status').textContent = 'Escuchando...';
-            };
+<script>
+const questions = [
+  {
+    id: 'type',
+    text: "¿Qué tipo de exploración TAC está informando?",
+    options: ["Torácica", "Abdominal", "Toracoabdominal"]
+  },
+  {
+    id: 'contrast',
+    text: "¿Se ha utilizado contraste endovenoso?",
+    options: ["Sí", "No"]
+  },
+  {
+    id: 'contrastPhase',
+    text: "¿Qué fases de adquisición se han realizado?",
+    options: ["Arterial", "Portal", "Arterial y Portal"],
+    condition: (answers) => answers.contrast === "Sí"
+  },
+  {
+    id: 'lungBases',
+    text: '¿Cómo son las bases pulmonares?',
+    options: ['Normal o normales', 'Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente', 'Significativo derrame pleural ... de unos .... cm de grosor máximo.'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Abdominal'
+  },
+  {
+    id: 'mediastinicVascular',
+    text: 'Describa las estructuras mediastínicas vasculares:',
+    options: ['Normales', 'Cardiomegalia'],
+    category: "thorax",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Torácica'
+  },
+  {
+    id: 'mediastinicAdenopathy',
+    text: '¿Existe adenopatías mediastínicas?',
+    options: ['No', 'Pequeñas inespecíficas'],
+    category: "thorax",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Torácica'
+  },
+  {
+    id: 'lungParenchyma',
+    text: 'Describa el parénquima pulmonar:',
+    options: ['Normal o normales', 'Parénquima pulmonar de aspecto enfisematoso', 'Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.'],
+    category: "thorax",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Torácica'
+  },
+  {
+    id: 'liver',
+    text: 'Describa el hígado:',
+    options: ['Normal', 'Con rasgos de hepatopatía crónica', 'Esteatosis'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'loes',
+    text: 'Existen LOES hepáticas?',
+    options: ['No'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'gallbladderBileDuct',
+    text: 'Describa la vesícula y vía biliar:',
+    options: ['Normal o normales', 'Colelitiasis sin dilatación de la via biliar', 'Colecistectomía sin dilatación de vía biliar'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'pancreas',
+    text: 'Describa el páncreas:',
+    options: ['Normal', 'Rasgos de pancreatopatía crónica'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'spleen',
+    text: 'Describa el bazo:',
+    options: ['Normal', 'Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'adrenalGlands',
+    text: 'Describa las glándulas suprarrenales:',
+    options: ['Normal o normales', 'Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.', 'Hiperplasia adrenal bilateral'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'kidneys',
+    text: 'Describa los riñones:',
+    options: ['Normal o normales', 'Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'estomago',
+    text: 'Describa la cámara gástrica:',
+    options: ['Normal', 'Pobremente distendida'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'idelgado',
+    text: 'Describa las asas de intestino delgado:',
+    options: ['Normales', 'Se aprecian suturas'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'igrueso',
+    text: 'Describa el marco cólico:',
+    options: ['Normal', 'Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'freeFluid',
+    text: '¿Hay líquido libre intra-abdominal o adenopatías?',
+    options: ['No'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'aortoiliacAxis',
+    text: 'Describa el eje aorto-ilíaco:',
+    options: ['Normal', 'Ateromatosis aorto-iliaca calcificada difusa', 'Dilatación aneurismática de aorta abdominal infrarrenal de ... cm'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'axialSkeleton',
+    text: 'Describa el esqueleto axial incluido en el estudio:',
+    options: ['Sin hallazgos de interés', 'Cambios degenerativos'],
+    category: "abdomen",
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal'
+  },
+  {
+    id: 'impression',
+    text: 'Impresión diagnóstica:',
+    options: ['Sin hallazgos de interés', 'Similar a previos', 'Ver informe descriptivo'],
+    allowFreeText: true,
+    condition: (answers) => answers.type === 'Toracoabdominal' || answers.type === 'Abdominal' || answers.type === 'Torácica'
+  }
+];
 
-            recognition.onend = function() {
-                if (esDictando) {
-                    recognition.start();
-                } else {
-                    document.getElementById('microfono').classList.remove('activo');
-                    document.getElementById('microfono').textContent = '🎤 Iniciar Dictado';
-                    document.getElementById('status').textContent = 'Dictado pausado.';
-                }
-            };
+let currentQuestion = 0;
+let answers = {};
+let recognition;
+let isRecognitionActive = false;
 
-            recognition.onresult = function(event) {
-                let interimTranscript = '';
-                let finalTranscript = '';
+function setupFreeTextObservers() {
+  const freeTextInput = document.getElementById('freeTextInput');
+  if (freeTextInput) {
+    freeTextInput.addEventListener('input', () => {
+      const question = questions[currentQuestion];
+      if (question && question.allowFreeText) {
+        answers[question.id] = freeTextInput.value.trim();
+        updatePreview();  // Actualiza la vista previa del informe en tiempo real
+      }
+    });
+  }
+}
 
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
-                    } else {
-                        interimTranscript += transcript;
-                    }
-                }
+function displayQuestion() {
+  const question = questions[currentQuestion];
 
-                if (finalTranscript) {
-                    const informe = document.getElementById('informe');
-                    const cursorPosition = informe.selectionStart;
-                    const textBeforeCursor = informe.value.substring(0, cursorPosition);
-                    const textAfterCursor = informe.value.substring(cursorPosition);
-                    
-                    finalTranscript = applyCapitalizationAndPunctuation(finalTranscript);
-                    informe.value = textBeforeCursor + finalTranscript + textAfterCursor;
-                    informe.selectionStart = informe.selectionEnd = cursorPosition + finalTranscript.length;
+  if (question.condition && !question.condition(answers)) {
+    nextQuestion();
+    return;
+  }
 
-                    aprenderFrases(finalTranscript);
-                    actualizarSugerencias();
-                }
+  const questionContainer = document.getElementById('questions');
+  questionContainer.innerHTML = '';
 
-                document.getElementById('status').textContent = interimTranscript ? 'Transcribiendo: ' + interimTranscript : 'Escuchando...';
-            };
+  const questionElement = document.createElement('div');
+  questionElement.className = 'question';
+  questionElement.innerHTML = `<h2>${question.text}</h2>`;
 
-            recognition.onerror = function(event) {
-                console.error('Error en el reconocimiento de voz:', event.error);
-                document.getElementById('status').textContent = 'Error en el reconocimiento: ' + event.error;
-                if (event.error === 'no-speech') {
-                    recognition.stop();
-                    setTimeout(() => {
-                        if (esDictando) recognition.start();
-                    }, 1000);
-                }
-            };
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'options-container';
+
+  question.options.forEach(option => {
+    const button = document.createElement('button');
+    button.textContent = option;
+    button.onclick = () => selectOption(option);
+    optionsContainer.appendChild(button);
+  });
+
+  questionElement.appendChild(optionsContainer);
+
+  if (question.allowFreeText) {
+    const freeTextContainer = document.createElement('div');
+    freeTextContainer.className = 'free-text-container';
+    freeTextContainer.innerHTML = `
+      <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
+      <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
+      <button id="correctButton" onclick="correctText('freeTextInput')">Corregir</button>
+    `;
+    questionElement.appendChild(freeTextContainer);
+
+
+  }
+
+  questionContainer.appendChild(questionElement);
+  setupFreeTextObservers(); // Setup the observer after the textarea is added to the DOM
+  updateNavigationButtons();
+  updatePreview();  // Actualiza la vista previa al mostrar la pregunta
+}
+
+function selectOption(option) {
+  const question = questions[currentQuestion];
+  const freeTextInput = document.getElementById('freeTextInput');
+
+  if (freeTextInput && freeTextInput.value.trim() !== '') {
+    answers[question.id] = freeTextInput.value.trim();
+  } else {
+    answers[question.id] = option;
+  }
+  updatePreview();
+  nextQuestion();
+}
+
+const question = questions[currentQuestion];
+if (question.allowFreeText) {
+    const freeTextContainer = document.createElement('div');
+    freeTextContainer.className = 'free-text-container';
+    freeTextContainer.innerHTML = `
+        <textarea id="freeTextInput" placeholder="Ingrese texto adicional aquí..."></textarea>
+        <button id="dictateButton" onclick="toggleDictation('freeTextInput')">Dictar</button>
+        <button id="correctButton" onclick="correctText('freeTextInput')">Corregir</button>
+    `;
+    questionElement.appendChild(freeTextContainer);
+}
+
+function updatePreview() {
+    const previewText = document.getElementById('previewText');
+    if (previewText) {
+        previewText.innerHTML = generateReport().replace(/\n/g, '<br>');
+    } else {
+        console.error('Element with id "previewText" not found');
+    }
+}
+
+
+
+
+function correctText(targetElementId) {
+    const targetElement = document.getElementById(targetElementId);
+    if (!targetElement) {
+        console.error('Target element not found:', targetElementId);
+        return;
+    }
+
+    const selectedText = targetElement.value.substring(targetElement.selectionStart, targetElement.selectionEnd);
+
+    if (selectedText) {
+        const correction = prompt("¿Qué es lo que querías decir?", selectedText);
+        if (correction !== null) {
+            targetElement.setRangeText(correction, targetElement.selectionStart, targetElement.selectionEnd, 'end');
+
+            // Almacenar la corrección (opcional)
+            localStorage.setItem(`correction_${selectedText}`, correction);
+
+            // Actualiza el texto en las respuestas y en la vista previa
+            const question = questions[currentQuestion];
+            if (question && question.allowFreeText) {
+                answers[question.id] = targetElement.value.trim();
+                updatePreview();  // Actualiza la vista previa del informe
+            }
+        }
+    } else {
+        alert("Por favor selecciona el texto que deseas corregir.");
+    }
+}
+
+function setDictationState(targetElementId, isDictating) {
+    const targetElement = document.getElementById(targetElementId);
+    if (targetElement) {
+        if (isDictating) {
+            targetElement.classList.add('textarea-dictating');
+            targetElement.classList.remove('textarea-default');
         } else {
-            document.getElementById('status').textContent = 'El reconocimiento de voz no está soportado en este navegador.';
+            targetElement.classList.add('textarea-default');
+            targetElement.classList.remove('textarea-dictating');
         }
+    }
+}
 
-        function applyCapitalizationAndPunctuation(text) {
-            text = text.trim();
-            text = text.replace(/(^\w|\.\s+\w)/g, match => match.toUpperCase());
-            if (!/[.!?]$/.test(text)) {
-                text += '.';
+
+
+
+
+function toggleDictation(targetElementId) {
+    if (!recognition) {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'es-ES';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = true;
+    }
+
+    if (isRecognitionActive) {
+        recognition.stop();
+        setDictationState(targetElementId, false); // Cambia el color de fondo
+        isRecognitionActive = false;
+        console.log('Recognition stopped');
+    } else {
+        recognition.onresult = function(event) {
+            const targetElement = document.getElementById(targetElementId);
+            let transcript = event.results[event.results.length - 1][0].transcript;
+            // Aplicar corrección almacenada si existe
+            const storedCorrection = localStorage.getItem(`correction_${transcript}`);
+            if (storedCorrection) {
+                transcript = storedCorrection;
             }
-            return text;
-        }
+            const selectionStart = targetElement.selectionStart;
+            const selectionEnd = targetElement.selectionEnd;
+            const beforeText = targetElement.value.slice(0, selectionStart);
+            const afterText = targetElement.value.slice(selectionEnd);
 
-        function aprenderFrases(texto) {
-            const frases = texto.match(/\b(\w+\s+){2,5}\w+\b/g) || [];
-            frases.forEach(frase => {
-                frasesHabituales[frase] = (frasesHabituales[frase] || 0) + 1;
-            });
-            localStorage.setItem('frasesHabituales', JSON.stringify(frasesHabituales));
-        }
+            // Reemplazos y formateo
+            transcript = transcript.replace(/\bpunto y aparte\b/g, '.\n')
+                                   .replace(/\bcoma\b/g, ',')
+                                   .replace(/\bpunto\b/g, '.')
+                                   .replace(/\s*([,.])/g, '$1 ')
+                                   .replace(/\. \n/g, '.\n')
+                                   .replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => '. ' + p1.toUpperCase())
+                                   .replace(/\s{2,}/g, ' ');
 
-        function actualizarSugerencias() {
-            const sugerenciasDiv = document.getElementById('sugerencias');
-            sugerenciasDiv.innerHTML = '<h3>Sugerencias de frases habituales</h3>';
-            
-            const frasesOrdenadas = Object.entries(frasesHabituales)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
+            if (beforeText.trim() === '' || beforeText.trim().endsWith('.')) {
+                transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+            }
+            if (beforeText && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') && !/[,.]\s*$/.test(beforeText)) {
+                transcript = ' ' + transcript;
+            }
+            if (afterText && !afterText.startsWith(' ') && !/^[,.]/.test(afterText)) {
+                transcript += ' ';
+            }
 
-            frasesOrdenadas.forEach(([frase, _]) => {
-                const boton = document.createElement('button');
-                boton.textContent = frase;
-                boton.onclick = () => insertarFrase(frase);
-                sugerenciasDiv.appendChild(boton);
-            });
-        }
+            targetElement.value = beforeText + transcript + afterText;
+            targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
 
-        function insertarFrase(frase) {
-            const informe = document.getElementById('informe');
-            const cursorPosition = informe.selectionStart;
-            const textBeforeCursor = informe.value.substring(0, cursorPosition);
-            const textAfterCursor = informe.value.substring(cursorPosition);
-            
-            informe.value = textBeforeCursor + frase + ' ' + textAfterCursor;
-            informe.setSelectionRange(cursorPosition + frase.length + 1, cursorPosition + frase.length + 1);
-            informe.focus();
-        }
+            if (targetElementId === 'freeTextInput') {
+                const question = questions[currentQuestion];
+                answers[question.id] = targetElement.value.trim();
+            }
+            updatePreview();
+        };
 
-        document.getElementById('microfono').onclick = function() {
-            if (esDictando) {
-                esDictando = false;
-                recognition.stop();
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        recognition.start();
+        setDictationState(targetElementId, true); // Cambia el color de fondo
+        isRecognitionActive = true;
+        console.log('Recognition started');
+    }
+}
+
+
+
+
+
+function nextQuestion() {
+  if (currentQuestion < questions.length - 1) {
+    currentQuestion++;
+    displayQuestion();
+  } else {
+    showFinalReport();
+  }
+}
+
+function previousQuestion() {
+  if (currentQuestion > 0) {
+    do {
+      currentQuestion--;
+      const question = questions[currentQuestion];
+
+      if (
+        (answers.type === "Abdominal" && (question.category === "abdomen" || question.id === "lungBases")) ||
+        (answers.type === "Torácica" && question.category === "thorax") ||
+        answers.type === "Toracoabdominal" ||
+        !question.category
+      ) {
+        break;
+      }
+    } while (currentQuestion > 0);
+
+    displayQuestion();
+  }
+}
+
+function updateNavigationButtons() {
+  const prevButton = document.getElementById('prevButton');
+  const nextButton = document.getElementById('nextButton');
+
+  prevButton.style.display = currentQuestion === 0 ? 'none' : 'inline-block';
+  nextButton.textContent = currentQuestion === questions.length - 1 ? 'Finalizar' : 'Siguiente';
+}
+
+function showFinalReport() {
+  const finalReportContainer = document.getElementById('finalReportContainer');
+  const finalReportText = document.getElementById('finalReportText');
+  finalReportContainer.style.display = 'block';
+  finalReportText.value = generateReport();
+}
+
+function generateReport() {
+    let report = '';
+
+    if (answers.type && answers.contrast) {
+        const tacType = answers.type.toLowerCase();
+        const contrastUsed = answers.contrast === 'Sí' ? 'tras' : 'sin';
+        const contrastPhase = answers.contrast === 'Sí' && answers.contrastPhase ? ` con adquisición de imágenes en fase ${answers.contrastPhase.toLowerCase()}` : '';
+
+        report += `Se realiza exploración ${tacType} ${contrastUsed} la administración endovenosa de contraste${contrastPhase}.\n\n`;
+    }
+
+    const thoraxQuestions = questions.filter(q => q.category === 'thorax');
+    const abdominalQuestions = questions.filter(q => q.category === 'abdomen');
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+
+      questions.forEach((question) => {
+        if (answers[question.id]) {
+          if (question.id === 'mediastinicVascular') {
+            if (answers[question.id] === 'Normales') {
+              report += `\nEstructuras mediastínicas vasculares sin hallazgos morfológicos relevantes.`;
+            } else if (answers[question.id] === 'Cardiomegalia') {
+              report += `\nCardiomegalia. Resto de estructuras mediastínicas vasculares sin hallazgos morfológicos relevantes.`;
             } else {
-                esDictando = true;
-                recognition.start();
+             report += `\n${postProcessText(answers[question.id])}`;
             }
-        };
-
-        document.getElementById('limpiarInforme').onclick = function() {
-            document.getElementById('informe').value = '';
-            document.getElementById('status').textContent = 'Informe limpiado.';
-        };
-
-        document.getElementById('agregarPalabra').onclick = function() {
-            let nuevaPalabra = document.getElementById('nuevaPalabra').value.trim();
-            if (nuevaPalabra) {
-                vocabularioMedico.add(nuevaPalabra);
-                localStorage.setItem('vocabularioMedico', JSON.stringify([...vocabularioMedico]));
-                document.getElementById('nuevaPalabra').value = '';
-                actualizarPalabrasGuardadas();
-                document.getElementById('status').textContent = 'Palabra agregada: ' + nuevaPalabra;
-            }
-        };
-
-        function actualizarPalabrasGuardadas() {
-            let palabrasGuardadas = document.getElementById('palabrasGuardadas');
-            palabrasGuardadas.innerHTML = '<h4>Vocabulario guardado:</h4>';
-            vocabularioMedico.forEach(palabra => {
-                let span = document.createElement('span');
-                span.textContent = palabra + ' ';
-                palabrasGuardadas.appendChild(span);
-            });
-        }
-
-        document.getElementById('mejorarIA').onclick = async function() {
-            if (!apiKey) {
-                alert('Por favor, ingrese su clave API de Merriam-Webster antes de mejorar el informe.');
-                return;
-            }
-
-            let informe = document.getElementById('informe');
-            let texto = informe.value;
-
-            document.getElementById('status').textContent = 'Procesando con IA...';
-            
-            try {
-                const palabras = texto.match(/\b\w+\b/g);
-                let informeMejorado = texto;
-
-                for (const palabra of palabras) {
-                    if (!vocabularioMedico.has(palabra.toLowerCase())) {
-                        const url = `https://www.dictionaryapi.com/api/v3/references/medical/json/${encodeURIComponent(palabra)}?key=${apiKey}`;
-                        const response = await fetch(url);
-                        const data = await response.json();
-
-                        if (data.length > 0 && typeof data[0] === 'object') {
-                            const definicion = data[0].shortdef ? data[0].shortdef[0] : null;
-                            if (definicion) {
-                                const regex = new RegExp(`\\b${palabra}\\b`, 'g');
-                                informeMejorado = informeMejorado.replace(regex, `<span class="highlight" title="${definicion}">${palabra}</span>`);
-                            }
-                        }
-                    }
-                }
-
-                informe.value = informeMejorado;
-                document.getElementById('status').textContent = 'Informe mejorado con definiciones médicas';
-            } catch (error) {
-                console.error('Error al procesar con IA:', error);
-                document.getElementById('status').textContent = 'Error al procesar con IA: ' + error.message;
-            }
-        };
-
-        document.getElementById('guardarApiKey').onclick = function() {
-            const newApiKey = document.getElementById('apiKey').value.trim();
-            if (newApiKey) {
-                apiKey = newApiKey;
-                localStorage.setItem('merriamWebsterApiKey', apiKey);
-                alert('Clave API guardada correctamente');
+          } else if (question.id === 'mediastinicAdenopathy') {
+            if (answers[question.id] === 'No') {
+              report += `\nNo se aprecian adenopatías mediastínicas de aspecto patológico.`;
+            } else if (answers[question.id] === 'Pequeñas inespecíficas') {
+              report += `\nPequeñas formaciones ganglionares mediastínicas de tamaño no significativo.`;
             } else {
-                alert('Por favor, ingrese una clave API válida');
+              report += `\n${postProcessText(answers[question.id])}`;
             }
-        };
+          } else if (question.id === 'lungParenchyma') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nParénquima pulmonar sin imágenes nodulares ni aumentos de densidad sugestivos de afectación patológica.`;
+            } else if (answers[question.id] === 'Parénquima pulmonar de aspecto enfisematoso') {
+              report += `\nParénquima pulmonar de aspecto enfisematoso sin claras imágenes nodulares ni aumentos de densidad sugestivos de afectación patológica.`;
+            } else if (answers[question.id] === 'Tractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.') {
+              report += `\nTractos fibrosos de aspecto cicatricial de predominio en.... pulmonares.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
 
-        // Cargar la clave API guardada al iniciar
-        document.getElementById('apiKey').value = apiKey;
 
-        actualizarPalabrasGuardadas();
-        actualizarSugerencias();
-    </script>
+
+
+
+          } else if (question.id === 'lungBases') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nBases pulmonares incluidas en el estudio sin hallazgos morfológicos relevantes.`;
+            } else if (answers[question.id] === 'Discreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente') {
+              report += `\nDiscreto derrame pleural bilateral con mínima atelectasia del parénquima pulmonar adyacente.`;
+            } else if (answers[question.id] === 'Significativo derrame pleural ... de unos .... cm de grosor máximo.') {
+              report += `\nSignificativo derrame pleural ... de unos .... cm de grosor máximo.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+
+
+
+
+
+
+          } else if (question.id === 'liver') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nEl hígado es de bordes lisos y densidad homogénea.`;
+            } else if (answers[question.id] === 'Con rasgos de hepatopatía crónica') {
+              report += `\nEl hígado es de contornos lobulados con parenquima discretamente granular en relación con rasgos de hepatopatía crónica.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'loes') {
+            if (answers[question.id] === 'No') {
+              report += ` No se identifican lesiones ocupantes de espacio.`;
+            } else {
+              report += ` ${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'gallbladderBileDuct') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nLa vesícula biliar y la vía biliar son normales.`;
+            } else if (answers[question.id] === 'Colelitiasis sin dilatación de la via biliar') {
+              report += `\nLa vesícula biliar muestra residuos litiásicos en su luz. Vía biliar intra y extrahepática no dilatada.`;
+            } else if (answers[question.id] === 'Colecistectomía sin dilatación de vía biliar') {
+              report += `\nColecistectomía. Vía biliar intra y extrahepática no dilatada.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'pancreas') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nGlándula pancreática sin lesiones focales ni dilatación del ducto pancreático principal.`;
+            } else if (answers[question.id] === 'Rasgos de pancreatopatía crónica') {
+              report += `\nEl páncreas muestra rasgos de pancreatopatía crónica, con una glándula de aspecto discretamente atrófico y pequeños focos de calcificación.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'spleen') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nBazo de normal tamaño y morfología.`;
+            } else if (answers[question.id] === 'Bazo aumentado de tamaño con un diámetro longitudinal de ... cm.') {
+              report += `\nBazo aumentado de tamaño con un diámetro longitudinal de ... cm.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'adrenalGlands') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nGlándulas suprarrenales sin hallazgos relevantes.`;
+            } else if (answers[question.id] === 'Glándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.') {
+              report += `\nGlándula suprarrenal ... con una imagen nodular de ... mm sugestiva de adenoma si bien no se ha realizado un estudio dirigido siendo la glándula suprarrenal contralateral normal.`;
+            } else if (answers[question.id] === 'Hiperplasia adrenal bilateral') {
+              report += `\nGlándulas suprarrenales de aspecto hiperplásico bilateralmente.`;
+            } else {
+              rport += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'kidneys') {
+            if (answers[question.id] === 'Normal o normales') {
+              report += `\nRiñones con buena diferenciación cortico-medular sin lesiones focales.`;
+            } else if (answers[question.id] === 'Riñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.') {
+              report += `\nRiñones sin hallazgos morfológicos de interés con varias imágenes compatibles con quistes simples siendo el mayor de todos uno que asienta en el riñón ... de ... milímetros de diámetro.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'estomago') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nCámara gástrica moderadamente distendida sin que se identifiquen engrosamientos parietales.`;
+            } else if (answers[question.id] === 'Pobremente distendida') {
+              report += `\nCámara gástrica pobremente distendida sin que se definan claros engrosamientos parietales mediante esta técnica diagnóstica.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'idelgado') {
+            if (answers[question.id] === 'Normales') {
+              report += `\nAsas de delgado sin claros engrosamientos parietales ni cambios de calibre significativos.`;
+            } else if (answers[question.id] === 'Se aprecian suturas') {
+              report += `\nSe identifican suturas en ... de morfología conservada.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'igrueso') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nMarco cólico de normal calibre y morfología sin claros engrosamientos parietales ni cambios de calibre significativos.`;
+            } else if (answers[question.id] === 'Se identifican divertículos en ... sin signos de complicaciones agudas asociadas.') {
+              report += `\nSe identifican divertículos en ... sin signos de complicaciones agudas asociadas.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'freeFluid') {
+            if (answers[question.id] === 'No') {
+              report += `\nNo se objetiva líquido libre ni adenopatías intra-abdominales de aspecto patológico.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'aortoiliacAxis') {
+            if (answers[question.id] === 'Normal') {
+              report += `\nEje aortoíliaco sin alteraciones significativas.`;
+            } else if (answers[question.id] === 'Ateromatosis aorto-iliaca calcificada difusa') {
+              report += `\nAteromatosis aorto-iliaca calcificada difusa.`;
+            } else if (answers[question.id] === 'Dilatación aneurismática de aorta abdominal infrarrenal de ... cm') {
+              report += `\nDilatación aneurismática de aorta abdominal infrarrenal de ... cm.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'axialSkeleton') {
+            if (answers[question.id] === 'Sin hallazgos de interés') {
+              report += `\nEsqueleto axial sin hallazgos relevantes.`;
+            } else if (answers[question.id] === 'Cambios degenerativos') {
+              report += `\nCambios degenerativos en esqueleto axial.`;
+            } else {
+              report += `\n${postProcessText(answers[question.id])}`;
+            }
+          } else if (question.id === 'impression') {
+            if (answers[question.id] === 'Sin hallazgos de interés') {
+              report += `\n\nSin hallazgos de interés.`;
+            } else if (answers[question.id] === 'Similar a previos') {
+              report += `\n\nExploración similar a últimos controles de imagen.`;
+            } else if (answers[question.id] === 'Ver informe descriptivo') {
+              report += `\n\nVer informe descriptivo.`;
+            } else {
+              report += `\n\n${postProcessText(answers[question.id])}`;
+            }
+           
+           
+           
+           
+          }
+        }
+      });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return report;
+}
+
+
+function postProcessText(text) {
+ // Capitalizar la primera letra de cada oración
+ text = text.replace(/(^\w|\.\s+\w)/g, match => match.toUpperCase());
+
+ // Asegurar que hay un espacio después de cada punto
+ text = text.replace(/\.(\w)/g, '. $1');
+
+ // Capitalizar nombres propios comunes en informes médicos
+ const properNouns = ['TC', 'TAC', 'RMN', 'PET', 'ECG'];
+ properNouns.forEach(noun => {
+   const regex = new RegExp(`\\b${noun.toLowerCase()}\\b`, 'g');
+   text = text.replace(regex, noun);
+ });
+
+ return text;
+}
+
+
+function saveReport() {
+  const finalReport = document.getElementById('finalReportText').value;
+  navigator.clipboard.writeText(finalReport).then(() => {
+    alert('Informe copiado al portapapeles');
+    document.getElementById('restartButton').style.display = 'inline-block';
+  }).catch(err => {
+    console.error('Error al copiar al portapapeles:', err);
+  });
+}
+
+function restartQuestionnaire() {
+  currentQuestion = 0;
+  answers = {};
+  document.getElementById('finalReportContainer').style.display = 'none';
+  displayQuestion();
+}
+
+function updatePreview() {
+  const previewText = document.getElementById('previewText');
+  previewText.innerHTML = generateReport().replace(/\n/g, '<br>');
+}
+
+// Iniciar el cuestionario al cargar la página
+window.onload = () => {
+  displayQuestion();
+};
+
+// Inicializa la función de dictado para el informe final
+function startFinalReportDictation() {
+  toggleDictation('finalReportText');
+}
+</script>
 </body>
 </html>
