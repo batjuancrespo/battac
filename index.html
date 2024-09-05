@@ -923,7 +923,7 @@ function startFinalReportDictation() {
   toggleDictation('finalReportText');
 }
   document.addEventListener('keydown', function(event) {
-  if (event.shiftKey && event.key.toLowerCase() === 'i' && event.metaKey) {
+  if (event.shiftKey && event.key.toLowerCase() === 'I' && event.metaKey) {
     event.preventDefault();
     const dictateButton = document.getElementById('dictateButton');
     if (dictateButton) {
