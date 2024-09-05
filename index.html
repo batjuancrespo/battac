@@ -41,13 +41,12 @@
         </div>
     </div>
     <div class="section">
-        <h2>Frases Comunes:</h2>
-        <div id="template-buttons">
-            <button onclick="addPhrase('Sin evidencia de')">Sin evidencia de</button>
-            <button onclick="addPhrase('Se observa')">Se observa</button>
-            <button onclick="addPhrase('En comparación con estudios previos')">En comparación con estudios previos</button>
-            <button onclick="addPhrase('Se recomienda')">Se recomienda</button>
-        </div>
+        <h2>Puntuación:</h2>
+        <button onclick="addPunctuation('.')">Punto</button>
+        <button onclick="addPunctuation(',')">Coma</button>
+        <button onclick="addPunctuation(':')">Dos puntos</button>
+        <button onclick="addPunctuation(';')">Punto y coma</button>
+        <button onclick="addLineBreak()">Salto de línea</button>
     </div>
     <div class="section">
         <h2>Corrección:</h2>
@@ -60,10 +59,10 @@
         let vocabulary = new Set();
         let recognition;
         let radiologyTerms = new Set([
-            'hepatomegalia', 'esplenomegalia', 'ascitis', 'colelitiasis', 'pancreatitis',
-            'apendicitis', 'diverticulitis', 'obstrucción intestinal', 'nefrolitiasis',
-            'aneurisma aórtico', 'esteatosis hepática', 'cirrosis', 'quiste renal',
-            'adenopatía', 'masa', 'tumor', 'metástasis', 'linfadenopatía'
+            'Hepatomegalia', 'Esplenomegalia', 'Ascitis', 'Colelitiasis', 'Pancreatitis',
+            'Apendicitis', 'Diverticulitis', 'Obstrucción intestinal', 'Nefrolitiasis',
+            'Aneurisma aórtico', 'Esteatosis hepática', 'Cirrosis', 'Quiste renal',
+            'Adenopatía', 'Masa', 'Tumor', 'Metástasis', 'Linfadenopatía'
         ]);
 
         async function init() {
@@ -114,20 +113,52 @@
 
         async function processRecognizedText(text) {
             const improvedText = await improveTextWithModel(text);
-            document.getElementById('improved-result').innerText = improvedText;
+            document.getElementById('improved-result').innerHTML = improvedText;
             
             const detectedTerms = detectRadiologyTerms(text);
             document.getElementById('radiology-terms').innerText = detectedTerms.join(', ');
         }
 
         async function improveTextWithModel(text) {
+            // Aplicar correcciones de capitalización y puntuación
+            text = correctCapitalization(text);
+            text = correctPunctuation(text);
+            
             const inputTensor = tf.tensor1d([text.length]);
             const prediction = model.predict(inputTensor);
-            return `${text}`;  // En este caso, simplemente devolvemos el texto original
+            return text;
+        }
+
+        function correctCapitalization(text) {
+            // Capitalizar la primera letra de cada oración
+            text = text.replace(/(^\w|\.\s+\w)/gm, match => match.toUpperCase());
+            
+            // Capitalizar términos radiológicos
+            radiologyTerms.forEach(term => {
+                const regex = new RegExp('\\b' + term + '\\b', 'gi');
+                text = text.replace(regex, term);
+            });
+
+            return text;
+        }
+
+        function correctPunctuation(text) {
+            // Añadir espacio después de comas y puntos si no existe
+            text = text.replace(/([.,])(?=\S)/g, '$1 ');
+            
+            // Eliminar espacios antes de comas y puntos
+            text = text.replace(/\s+([.,])/g, '$1');
+            
+            // Asegurar que haya un espacio después de los dos puntos
+            text = text.replace(/:\s*/g, ': ');
+
+            return text;
         }
 
         function detectRadiologyTerms(text) {
-            return Array.from(radiologyTerms).filter(term => text.toLowerCase().includes(term));
+            return Array.from(radiologyTerms).filter(term => 
+                new RegExp('\\b' + term + '\\b', 'i').test(text)
+            );
         }
 
         function startRecognition() {
@@ -144,7 +175,9 @@
             
             correctedText.split(' ').forEach(word => {
                 vocabulary.add(word.toLowerCase());
-                radiologyTerms.add(word.toLowerCase());
+                if (word[0] === word[0].toUpperCase()) {
+                    radiologyTerms.add(word);
+                }
             });
             
             updateModel(recognizedText, correctedText);
@@ -163,10 +196,14 @@
             recognition.start();
         }
 
-        function addPhrase(phrase) {
+        function addPunctuation(punctuation) {
             const improvedResult = document.getElementById('improved-result');
-            improvedResult.innerHTML += `${phrase} `;
-            recognition.start();
+            improvedResult.innerHTML = improvedResult.innerHTML.trim() + punctuation + ' ';
+        }
+
+        function addLineBreak() {
+            const improvedResult = document.getElementById('improved-result');
+            improvedResult.innerHTML += '<br>';
         }
 
         init();
