@@ -545,73 +545,62 @@ function setDictationState(targetElementId, isDictating) {
 
 
 function toggleDictation(targetElementId) {
-    if (!recognition) {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'es-ES';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-        recognition.continuous = true;
-    }
+  const targetElement = document.getElementById(targetElementId);
+  if (!targetElement) {
+    console.log('Elemento objetivo no encontrado:', targetElementId);
+    return;
+  }
 
-    if (isRecognitionActive) {
-        recognition.stop();
-        setDictationState(targetElementId, false); // Cambia el color de fondo
-        isRecognitionActive = false;
-        console.log('Recognition stopped');
-    } else {
-        recognition.onresult = function(event) {
-            const targetElement = document.getElementById(targetElementId);
-            let transcript = event.results[event.results.length - 1][0].transcript;
-            // Aplicar corrección almacenada si existe
-            const storedCorrection = localStorage.getItem(`correction_${transcript}`);
-            if (storedCorrection) {
-                transcript = storedCorrection;
-            }
-            const selectionStart = targetElement.selectionStart;
-            const selectionEnd = targetElement.selectionEnd;
-            const beforeText = targetElement.value.slice(0, selectionStart);
-            const afterText = targetElement.value.slice(selectionEnd);
+  if (!recognition) {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = true;
+  }
 
-            // Reemplazos y formateo
-            transcript = transcript.replace(/\bpunto y aparte\b/g, '.\n')
-                                   .replace(/\bcoma\b/g, ',')
-                                   .replace(/\bpunto\b/g, '.')
-                                   .replace(/\s*([,.])/g, '$1 ')
-                                   .replace(/\. \n/g, '.\n')
-                                   .replace(/(?:\.\s+|\.\n+)(\w)/g, (match, p1) => '. ' + p1.toUpperCase())
-                                   .replace(/\s{2,}/g, ' ');
+  if (isRecognitionActive) {
+    recognition.stop();
+    setDictationState(targetElementId, false);
+    isRecognitionActive = false;
+    console.log('Reconocimiento detenido');
+  } else {
+    recognition.onresult = function(event) {
+      let transcript = event.results[event.results.length - 1][0].transcript;
+      // Aplicar corrección almacenada si existe
+      const storedCorrection = localStorage.getItem(`correction_${transcript}`);
+      if (storedCorrection) {
+        transcript = storedCorrection;
+      }
+      
+      // Insertar el texto transcrito en la posición del cursor
+      const selectionStart = targetElement.selectionStart;
+      const selectionEnd = targetElement.selectionEnd;
+      const beforeText = targetElement.value.slice(0, selectionStart);
+      const afterText = targetElement.value.slice(selectionEnd);
 
-            if (beforeText.trim() === '' || beforeText.trim().endsWith('.')) {
-                transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
-            }
-            if (beforeText && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') && !/[,.]\s*$/.test(beforeText)) {
-                transcript = ' ' + transcript;
-            }
-            if (afterText && !afterText.startsWith(' ') && !/^[,.]/.test(afterText)) {
-                transcript += ' ';
-            }
+      // Reemplazos y formateo (mantén tu lógica de formateo aquí)
+      
+      targetElement.value = beforeText + transcript + afterText;
+      targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
 
-            targetElement.value = beforeText + transcript + afterText;
-            targetElement.selectionStart = targetElement.selectionEnd = selectionStart + transcript.length;
+      if (targetElementId === 'freeTextInput') {
+        const question = questions[currentQuestion];
+        answers[question.id] = targetElement.value.trim();
+      }
+      updatePreview();
+    };
 
-            if (targetElementId === 'freeTextInput') {
-                const question = questions[currentQuestion];
-                answers[question.id] = targetElement.value.trim();
-            }
-            updatePreview();
-        };
+    recognition.onerror = function(event) {
+      console.error('Error de reconocimiento de voz:', event.error);
+    };
 
-        recognition.onerror = function(event) {
-            console.error('Speech recognition error:', event.error);
-        };
-
-        recognition.start();
-        setDictationState(targetElementId, true); // Cambia el color de fondo
-        isRecognitionActive = true;
-        console.log('Recognition started');
-    }
+    recognition.start();
+    setDictationState(targetElementId, true);
+    isRecognitionActive = true;
+    console.log('Reconocimiento iniciado');
+  }
 }
-
 
 
 
@@ -944,15 +933,59 @@ window.onload = () => {
 function startFinalReportDictation() {
   toggleDictation('finalReportText');
 }
-  document.addEventListener('keydown', function(event) {
-  if (event.shiftKey && event.key.toLowerCase() === 'I' && event.metaKey) {
-    event.preventDefault();
+ 
+  
+  const keyState = {
+  shift: false,
+  i: false,
+  meta: false
+};
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+document.addEventListener('keydown', handleKeyPress);
+document.addEventListener('keyup', handleKeyRelease);
+
+function handleKeyPress(event) {
+  updateKeyState(event, true);
+  checkCombination();
+}
+
+function handleKeyRelease(event) {
+  updateKeyState(event, false);
+}
+
+function updateKeyState(event, isPressed) {
+  if (event.key.toLowerCase() === 'i') {
+    keyState.i = isPressed;
+  } else if (event.key === 'Shift') {
+    keyState.shift = isPressed;
+  } else if (event.key === 'Meta') {
+    keyState.meta = isPressed;
+  }
+}
+
+function checkCombination() {
+  if (keyState.shift && keyState.i && keyState.meta) {
     const dictateButton = document.getElementById('dictateButton');
     if (dictateButton) {
       dictateButton.click();
     } else {
-      console.log('Botón de dictado no encontrado');  
+      console.log('Botón de dictado no encontrado');
     }
+  }
+}
   }
 });
 </script>
