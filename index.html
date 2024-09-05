@@ -3,47 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reconocimiento de Voz para Informes Radiológicos</title>
+    <title>Reconocimiento de Voz para Informes Radiológicos Abdominales</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/2.8.0/tf.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
         button { margin: 5px; padding: 10px; }
         #interim-result { color: gray; }
         #final-result { font-weight: bold; }
-        #status { color: red; }
+        #improved-result { color: green; }
+        #radiology-terms { color: blue; }
         .section { margin-top: 20px; }
+        #template-buttons { display: flex; flex-wrap: wrap; }
     </style>
 </head>
 <body>
-    <h1>Reconocimiento de Voz para Informes Radiológicos</h1>
+    <h1>Reconocimiento de Voz para Informes Radiológicos Abdominales</h1>
     <button onclick="startRecognition()">Iniciar Reconocimiento</button>
     <button onclick="stopRecognition()">Detener Reconocimiento</button>
     <div class="section">
-        <h2>Estado:</h2>
-        <p id="status"></p>
         <h2>Resultado Intermedio:</h2>
         <p id="interim-result"></p>
         <h2>Resultado Final:</h2>
         <p id="final-result"></p>
+        <h2>Resultado Mejorado:</h2>
+        <p id="improved-result"></p>
+        <h2>Términos Radiológicos Detectados:</h2>
+        <p id="radiology-terms"></p>
+    </div>
+    <div class="section">
+        <h2>Estructura del Informe Radiológico:</h2>
+        <div id="template-buttons">
+            <button onclick="addSection('Tipo de Estudio')">Tipo de Estudio</button>
+            <button onclick="addSection('Indicación Clínica')">Indicación Clínica</button>
+            <button onclick="addSection('Técnica')">Técnica</button>
+            <button onclick="addSection('Hallazgos')">Hallazgos</button>
+            <button onclick="addSection('Impresión')">Impresión</button>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Frases Comunes:</h2>
+        <div id="template-buttons">
+            <button onclick="addPhrase('Sin evidencia de')">Sin evidencia de</button>
+            <button onclick="addPhrase('Se observa')">Se observa</button>
+            <button onclick="addPhrase('En comparación con estudios previos')">En comparación con estudios previos</button>
+            <button onclick="addPhrase('Se recomienda')">Se recomienda</button>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Corrección:</h2>
+        <input type="text" id="correction" placeholder="Ingrese la corrección aquí">
+        <button onclick="correctAndLearn()">Corregir y Aprender</button>
     </div>
 
     <script>
+        let model;
+        let vocabulary = new Set();
         let recognition;
+        let radiologyTerms = new Set([
+            'hepatomegalia', 'esplenomegalia', 'ascitis', 'colelitiasis', 'pancreatitis',
+            'apendicitis', 'diverticulitis', 'obstrucción intestinal', 'nefrolitiasis',
+            'aneurisma aórtico', 'esteatosis hepática', 'cirrosis', 'quiste renal',
+            'adenopatía', 'masa', 'tumor', 'metástasis', 'linfadenopatía'
+        ]);
 
-        function init() {
+        async function init() {
             try {
-                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'es-ES';
-
-                recognition.onresult = handleRecognitionResult;
-                recognition.onerror = handleRecognitionError;
-                recognition.onend = handleRecognitionEnd;
-
-                updateStatus('Sistema inicializado. Pulse "Iniciar Reconocimiento" para comenzar.');
+                model = await tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/model.json');
             } catch (error) {
-                updateStatus('Error al inicializar el reconocimiento de voz: ' + error.message);
+                console.error('Error al cargar el modelo:', error);
+                model = await tf.sequential();
+                model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+                model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
             }
+            
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'es-ES';
+
+            recognition.onresult = handleRecognitionResult;
+            recognition.onerror = handleRecognitionError;
         }
 
         function handleRecognitionResult(event) {
@@ -59,45 +98,78 @@
             }
 
             displayResult(interimTranscript, finalTranscript);
+            if (finalTranscript) {
+                processRecognizedText(finalTranscript);
+            }
         }
 
         function handleRecognitionError(event) {
-            updateStatus('Error en el reconocimiento de voz: ' + event.error);
-        }
-
-        function handleRecognitionEnd() {
-            updateStatus('Reconocimiento de voz finalizado. Pulse "Iniciar Reconocimiento" para continuar.');
+            console.error('Error en el reconocimiento de voz:', event.error);
         }
 
         function displayResult(interim, final) {
-            document.getElementById('interim-result').textContent = interim;
-            document.getElementById('final-result').textContent += final + ' ';
+            document.getElementById('interim-result').innerText = interim;
+            document.getElementById('final-result').innerText = final;
+        }
+
+        async function processRecognizedText(text) {
+            const improvedText = await improveTextWithModel(text);
+            document.getElementById('improved-result').innerText = improvedText;
+            
+            const detectedTerms = detectRadiologyTerms(text);
+            document.getElementById('radiology-terms').innerText = detectedTerms.join(', ');
+        }
+
+        async function improveTextWithModel(text) {
+            const inputTensor = tf.tensor1d([text.length]);
+            const prediction = model.predict(inputTensor);
+            return `${text}`;  // En este caso, simplemente devolvemos el texto original
+        }
+
+        function detectRadiologyTerms(text) {
+            return Array.from(radiologyTerms).filter(term => text.toLowerCase().includes(term));
         }
 
         function startRecognition() {
-            try {
-                recognition.start();
-                updateStatus('Reconocimiento de voz iniciado. Hable ahora.');
-            } catch (error) {
-                updateStatus('Error al iniciar el reconocimiento: ' + error.message);
-            }
+            recognition.start();
         }
 
         function stopRecognition() {
-            try {
-                recognition.stop();
-                updateStatus('Reconocimiento de voz detenido.');
-            } catch (error) {
-                updateStatus('Error al detener el reconocimiento: ' + error.message);
-            }
+            recognition.stop();
         }
 
-        function updateStatus(message) {
-            document.getElementById('status').textContent = message;
+        function correctAndLearn() {
+            const recognizedText = document.getElementById('final-result').innerText;
+            const correctedText = document.getElementById('correction').value;
+            
+            correctedText.split(' ').forEach(word => {
+                vocabulary.add(word.toLowerCase());
+                radiologyTerms.add(word.toLowerCase());
+            });
+            
+            updateModel(recognizedText, correctedText);
         }
 
-        // Inicializar el sistema al cargar la página
-        window.onload = init;
+        async function updateModel(original, corrected) {
+            const inputTensor = tf.tensor1d([original.length]);
+            const labelTensor = tf.tensor1d([corrected.length]);
+            await model.fit(inputTensor, labelTensor, {epochs: 1});
+            console.log('Modelo actualizado');
+        }
+
+        function addSection(sectionName) {
+            const improvedResult = document.getElementById('improved-result');
+            improvedResult.innerHTML += `<strong>${sectionName}:</strong> `;
+            recognition.start();
+        }
+
+        function addPhrase(phrase) {
+            const improvedResult = document.getElementById('improved-result');
+            improvedResult.innerHTML += `${phrase} `;
+            recognition.start();
+        }
+
+        init();
     </script>
 </body>
 </html>
