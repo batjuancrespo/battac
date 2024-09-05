@@ -971,13 +971,13 @@ function updateKeyState(event, isPressed) {
     keyState.i = isPressed;
   } else if (event.key === 'Shift') {
     keyState.shift = isPressed;
-  } else if (event.key === 'Meta') {
+  } else if (event.key === 'Win') {
     keyState.meta = isPressed;
   }
 }
 
 function checkCombination() {
-  if (keyState.shift && keyState.i && keyState.meta) {
+  if (keyState.shift && keyState.i && keyState.win) {
     const dictateButton = document.getElementById('dictateButton');
     if (dictateButton) {
       dictateButton.click();
