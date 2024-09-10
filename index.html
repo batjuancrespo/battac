@@ -3,86 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reconocimiento de voz en tiempo real</title>
+    <title>Dark Dictator - NLP Avanzado</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://unpkg.com/natural@6.10.4/lib/natural/index.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-        }
-        #status {
-            margin-top: 20px;
-            color: green;
-        }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        button { margin: 10px 0; padding: 10px; }
+        #output { border: 1px solid #ccc; min-height: 200px; padding: 10px; margin-top: 20px; }
+        #sugerencias { margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>Dictado de informes médicos</h1>
-
-    <button id="start-recording">Iniciar grabación</button>
-    <button id="stop-recording" disabled>Detener grabación</button>
-
-    <p id="status">Estado: Esperando para grabar...</p>
-
-    <h2>Transcripción:</h2>
-    <textarea id="transcription" rows="10" cols="80" placeholder="Aquí aparecerá la transcripción..." readonly></textarea>
+    <h1>Dark Dictator - NLP Avanzado</h1>
+    <button onclick="iniciarReconocimiento()">Iniciar Reconocimiento</button>
+    <button onclick="limpiarTexto()">Limpiar Texto</button>
+    <button onclick="corregirDictado()">Corregir Dictado</button>
+    <div id="output" contenteditable="true"></div>
+    <div id="sugerencias"></div>
 
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
-        const startBtn = document.getElementById('start-recording');
-        const stopBtn = document.getElementById('stop-recording');
-        const statusText = document.getElementById('status');
-        const transcriptionArea = document.getElementById('transcription');
+    let recognition;
+    let learningData = {};
+    let tokenizer, stemmer, NGrams;
 
-        startBtn.addEventListener('click', async () => {
-            // Solicitar permiso para usar el micrófono
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            
-            mediaRecorder.onstart = () => {
-                audioChunks = [];
-                statusText.textContent = 'Estado: Grabando...';
-                stopBtn.disabled = false;
-                startBtn.disabled = true;
+    function initNLP() {
+        if (typeof natural !== 'undefined') {
+            tokenizer = new natural.WordTokenizer();
+            stemmer = natural.PorterStemmerEs;
+            NGrams = natural.NGrams;
+        } else {
+            console.error('La biblioteca natural.js no se ha cargado correctamente.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        initNLP();
+    });
+
+    function iniciarReconocimiento() {
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        let transcript = event.results[i][0].transcript;
+                        document.getElementById('output').innerHTML += transcript + ' ';
+                        sugerirCorrecciones(transcript);
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
             };
 
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
+            recognition.start();
+        } else {
+            alert('Tu navegador no soporta reconocimiento de voz.');
+        }
+    }
 
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'audio.wav');
-                statusText.textContent = 'Estado: Procesando...';
+    function limpiarTexto() {
+        document.getElementById('output').innerHTML = '';
+        document.getElementById('sugerencias').innerHTML = '';
+    }
 
-                // Enviar la grabación al backend para transcribirla
-                fetch('https://dictatorial.onrender.com/transcribe', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    transcriptionArea.textContent = data.transcription;
-                    statusText.textContent = 'Estado: Transcripción completada';
-                })
-                .catch(error => {
-                    console.error('Error en la transcripción:', error);
-                    statusText.textContent = 'Estado: Error en la transcripción';
+    function corregirDictado() {
+        if (!tokenizer || !stemmer) {
+            alert('Las herramientas de NLP no están disponibles.');
+            return;
+        }
+        let texto = document.getElementById('output').innerHTML;
+        let tokens = tokenizer.tokenize(texto);
+        let corregido = tokens.map(token => {
+            let stem = stemmer.stem(token.toLowerCase());
+            if (learningData[stem]) {
+                return learningData[stem];
+            }
+            return token;
+        }).join(' ');
+        document.getElementById('output').innerHTML = corregido;
+    }
+
+    function sugerirCorrecciones(texto) {
+        if (!tokenizer || !stemmer) {
+            console.error('Las herramientas de NLP no están disponibles.');
+            return;
+        }
+        let tokens = tokenizer.tokenize(texto);
+        let sugerencias = tokens.map(token => {
+            let stem = stemmer.stem(token.toLowerCase());
+            if (learningData[stem] && learningData[stem] !== token) {
+                return `${token} → ${learningData[stem]}`;
+            }
+            return null;
+        }).filter(s => s !== null);
+
+        if (sugerencias.length > 0) {
+            document.getElementById('sugerencias').innerHTML = 'Sugerencias: ' + sugerencias.join(', ');
+        }
+    }
+
+    function aprenderCorreccion(palabraIncorrecta, palabraCorrecta) {
+        if (!stemmer) {
+            alert('Las herramientas de NLP no están disponibles.');
+            return;
+        }
+        let stemIncorrecto = stemmer.stem(palabraIncorrecta.toLowerCase());
+        learningData[stemIncorrecto] = palabraCorrecta;
+    }
+
+    function analizarContexto(texto) {
+        if (!tokenizer || !NGrams) {
+            console.error('Las herramientas de NLP no están disponibles.');
+            return;
+        }
+        let tokens = tokenizer.tokenize(texto);
+        let bigrams = NGrams.bigrams(tokens);
+        let trigrams = NGrams.trigrams(tokens);
+        
+        // Aquí podrías implementar lógica para analizar patrones en los n-gramas
+        // y utilizar esta información para mejorar las correcciones
+    }
+
+    function exportarDatosAprendizaje() {
+        let csv = Papa.unparse(Object.entries(learningData).map(([key, value]) => ({Stem: key, Correcto: value})));
+        let blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        let link = document.createElement("a");
+        if (link.download !== undefined) {
+            let url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "datos_aprendizaje_nlp.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    function importarDatosAprendizaje(event) {
+        let file = event.target.files[0];
+        Papa.parse(file, {
+            complete: function(results) {
+                results.data.forEach(row => {
+                    if (row.Stem && row.Correcto) {
+                        learningData[row.Stem] = row.Correcto;
+                    }
                 });
-
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-            };
-
-            mediaRecorder.start();
+                alert('Datos importados correctamente');
+            }
         });
+    }
 
-        stopBtn.addEventListener('click', () => {
-            mediaRecorder.stop();
-            statusText.textContent = 'Estado: Grabación detenida';
-        });
+    document.body.innerHTML += `
+        <button onclick="exportarDatosAprendizaje()">Exportar Datos de Aprendizaje</button>
+        <input type="file" id="importFile" style="display:none;" onchange="importarDatosAprendizaje(event)">
+        <button onclick="document.getElementById('importFile').click()">Importar Datos de Aprendizaje</button>
+    `;
     </script>
 </body>
 </html>
