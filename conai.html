@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictado de Informes Médicos</title>
+</head>
+<body>
+    <h1>Reconocimiento de voz en tiempo real</h1>
+
+    <textarea id="transcription" rows="10" cols="80" placeholder="Tu dictado aparecerá aquí..."></textarea><br>
+    <button id="startBtn">Iniciar dictado</button>
+    <button id="stopBtn">Detener dictado</button>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('startBtn').onclick = function() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                mediaRecorder.ondataavailable = function(event) {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = function() {
+                    let audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    audioChunks = [];
+
+                    // Enviar el archivo de audio al servidor Flask para transcribir
+                    let formData = new FormData();
+                    formData.append('audio', audioBlob, 'audio.wav');
+
+                    fetch('https://dictatorial.onrender.com/transcribe', {  // Reemplaza con tu URL de Render
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('transcription').value = data.transcription;
+                    });
+                };
+            });
+        };
+
+        document.getElementById('stopBtn').onclick = function() {
+            mediaRecorder.stop();
+        };
+    </script>
+</body>
+</html>
