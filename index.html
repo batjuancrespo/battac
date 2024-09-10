@@ -34,10 +34,15 @@
                     formData.append('audio', audioBlob, 'audio.wav');
 
                     fetch('https://dictatorial.onrender.com/transcribe', {  // Reemplaza con tu URL de Render
-                        method: 'POST',
-                        body: formData
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify(data)  // reemplaza 'data' con la información que estás enviando
                     })
                     .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch((error) => console.error('Error:', error));
                     .then(data => {
                         document.getElementById('transcription').value = data.transcription;
                     });
@@ -51,3 +56,4 @@
     </script>
 </body>
 </html>
+fetch('https://dictatorial.onrender.com/transcribe', {
