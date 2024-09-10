@@ -3,57 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dictado de Informes Médicos</title>
+    <title>Reconocimiento de voz en tiempo real</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        #status {
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
 </head>
 <body>
-    <h1>Reconocimiento de voz en tiempo real</h1>
+    <h1>Dictado de informes médicos</h1>
 
-    <textarea id="transcription" rows="10" cols="80" placeholder="Tu dictado aparecerá aquí..."></textarea><br>
-    <button id="startBtn">Iniciar dictado</button>
-    <button id="stopBtn">Detener dictado</button>
+    <button id="start-recording">Iniciar grabación</button>
+    <button id="stop-recording" disabled>Detener grabación</button>
+
+    <p id="status">Estado: Esperando para grabar...</p>
+
+    <h2>Transcripción:</h2>
+    <textarea id="transcription" rows="10" cols="80" placeholder="Aquí aparecerá la transcripción..." readonly></textarea>
 
     <script>
         let mediaRecorder;
         let audioChunks = [];
+        const startBtn = document.getElementById('start-recording');
+        const stopBtn = document.getElementById('stop-recording');
+        const statusText = document.getElementById('status');
+        const transcriptionArea = document.getElementById('transcription');
 
-        document.getElementById('startBtn').onclick = function() {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start();
+        startBtn.addEventListener('click', async () => {
+            // Solicitar permiso para usar el micrófono
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.onstart = () => {
+                audioChunks = [];
+                statusText.textContent = 'Estado: Grabando...';
+                stopBtn.disabled = false;
+                startBtn.disabled = true;
+            };
 
-                mediaRecorder.ondataavailable = function(event) {
-                    audioChunks.push(event.data);
-                };
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
 
-                mediaRecorder.onstop = function() {
-                    let audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    audioChunks = [];
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'audio.wav');
+                statusText.textContent = 'Estado: Procesando...';
 
-                    // Enviar el archivo de audio al servidor Flask para transcribir
-                    let formData = new FormData();
-                    formData.append('audio', audioBlob, 'audio.wav');
+                // Enviar la grabación al backend para transcribirla
+                fetch('https://dictatorial.onrender.com/transcribe', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    transcriptionArea.textContent = data.transcription;
+                    statusText.textContent = 'Estado: Transcripción completada';
+                })
+                .catch(error => {
+                    console.error('Error en la transcripción:', error);
+                    statusText.textContent = 'Estado: Error en la transcripción';
+                });
 
-                    fetch('https://dictatorial.onrender.com/transcribe', {  // Reemplaza con tu URL de Render
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify(data)  // reemplaza 'data' con la información que estás enviando
-                    })
-                    .then(response => response.json())
-                    .then(data => console.log(data))
-                    .catch((error) => console.error('Error:', error));
-                    .then(data => {
-                        document.getElementById('transcription').value = data.transcription;
-                    });
-                };
-            });
-        };
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            };
 
-        document.getElementById('stopBtn').onclick = function() {
+            mediaRecorder.start();
+        });
+
+        stopBtn.addEventListener('click', () => {
             mediaRecorder.stop();
-        };
+            statusText.textContent = 'Estado: Grabación detenida';
+        });
     </script>
 </body>
 </html>
-fetch('https://dictatorial.onrender.com/transcribe', {
