@@ -1,4 +1,6 @@
-<html><head><base href="." />
+<html>
+<head>
+<base href="." />
 <meta charset="UTF-8"> 
 <title>Marco Digital de Fotos</title>
 <style>
@@ -84,7 +86,6 @@ button:hover {
   text-align: center;
   padding: 20px;
 }
-
 </style>
 </head>
 <body>
@@ -118,7 +119,8 @@ function initializeGoogleAuth() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: handleAuthResponse
+    callback: handleAuthResponse,
+    redirect_uri: 'https://github.com/batjuancrespo/battac/', // URI debe coincidir con las configuradas en Google Cloud
   });
 }
 
@@ -189,38 +191,3 @@ gapi.load('client', () => {
 
 </body>
 </html>
-
-Para que este código funcione, necesitarás:
-
-1. Crear un proyecto en Google Cloud Console
-2. Habilitar la API de Google Photos
-3. Crear credenciales (OAuth 2.0)
-4. Reemplazar 'TU_API_KEY' y 'TU_CLIENT_ID' con tus credenciales reales
-
-Pasos para configurar:
-
-1. Ve a https://console.cloud.google.com/
-2. Crea un nuevo proyecto
-3. Habilita la API de Google Photos
-4. Ve a "Credenciales"
-5. Crea credenciales OAuth 2.0
-6. Añade los orígenes autorizados de JavaScript y las URIs de redirección
-7. Copia el Client ID y API Key y reemplázalos en el código
-
-Características del marco digital:
-
-- Diseño elegante con marco de madera virtual
-- Transiciones suaves entre fotos
-- Controles para iniciar/pausar la presentación
-- Autenticación segura con Google Photos
-- Las fotos se ajustan automáticamente al tamaño del marco
-- Intervalo de 5 segundos entre fotos (ajustable en el código)
-- Diseño responsive
-- Efectos de sombra para dar profundidad
-
-Puedes personalizar:
-- El color del marco (--frame-color)
-- El ancho del marco (--frame-width)
-- El tiempo entre fotos (en la función startSlideshow)
-- El tamaño del marco (.digital-frame width/height)
-- Los efectos de transición (transition en .photo)
