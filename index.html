@@ -3,31 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dictado Radiológico v30 (No Auth - Final)</title>
+    <title>Dictado Radiológico v21 (Modal Debug)</title>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"></script>
 
-    <!-- Firebase SDK Imports (SOLO App y Firestore) -->
+    <!-- Firebase SDK Imports -->
     <script type="module">
       const firebaseConfig = { /* ... Tu config ... */
-        apiKey: "AIzaSyA_VQH1y-px8-QF3gMw3VOPjiiU1OefDBo", authDomain: "almacena-correcciones-dictado.firebaseapp.com", projectId: "almacena-correcciones-dictado", storageBucket: "almacena-correcciones-dictado.appspot.com", messagingSenderId: "209194920272", appId: "1:209194920272:web:ccbec69d0a5aa88789e455", measurementId: "G-6PQSKYMDP0"
-      };
-      // userId NO se define aquí globalmente
+         apiKey: "AIzaSyA_VQH1y-px8-QF3gMw3VOPjiiU1OefDBo", authDomain: "almacena-correcciones-dictado.firebaseapp.com", projectId: "almacena-correcciones-dictado", storageBucket: "almacena-correcciones-dictado.appspot.com", messagingSenderId: "209194920272", appId: "1:209194920272:web:ccbec69d0a5aa88789e455", measurementId: "G-6PQSKYMDP0"
+       };
+      // userId fijo se define en initializeDictationApp
 
       try {
-            const fa = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-            const fs = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-            window.firebaseApp = fa.initializeApp(firebaseConfig);
-            window.db = fs.getFirestore(window.firebaseApp);
-            window.doc = fs.doc; window.getDoc = fs.getDoc; window.setDoc = fs.setDoc;
-            console.log("Firebase (App, Firestore) inicializado.");
-            document.dispatchEvent(new CustomEvent('firebaseReady'));
+            const fa=await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js'); const fs=await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+            window.firebaseApp=fa.initializeApp(firebaseConfig); window.db=fs.getFirestore(window.firebaseApp); window.doc=fs.doc; window.getDoc=fs.getDoc; window.setDoc=fs.setDoc;
+            // NO inicializar window.auth ni userId global aquí
+            console.log("Firebase (App, Firestore) inicializado."); document.dispatchEvent(new CustomEvent('firebaseReady'));
       } catch (error) { console.error("Error inicializando Firebase:", error); alert("Error crítico: No se pudo inicializar Firebase."); document.body.innerHTML = '<h1>Error de Carga</h1>'; }
     </script>
 
     <style>
+        /* --- Variables CSS --- */
+        :root { /* Claro */ } body.dark-mode { /* Oscuro */ }
         /* ... Estilos CSS completos (sin cambios) ... */
-        :root { /* Claro */ } body.dark-mode { /* Oscuro */ } :root { --bg-color: #f4f4f4; --container-bg: #fff; --text-color: #333; --text-muted-color: #555; --heading-color: #333; --border-color: #ccc; --border-light-color: #eee; --border-dashed-color: #ddd; --link-color: #007bff; --button-primary-bg: #007bff; --button-primary-hover-bg: #0056b3; --button-primary-text: white; --button-secondary-bg: #6c757d; --button-secondary-hover-bg: #5a6268; --button-secondary-text: white; --button-success-bg: #28a745; --button-success-hover-bg: #218838; --button-success-text: white; --button-danger-bg: #dc3545; --button-danger-hover-bg: #c82333; --button-danger-text: white; --button-warning-bg: #ffc107; --button-warning-hover-bg: #e0a800; --button-warning-text: #212529; --button-info-bg: #17a2b8; --button-info-hover-bg: #138496; --button-info-text: white; --button-light-gray-bg: #e9e9e9; --button-light-gray-hover-bg: #d8d8d8; --button-light-gray-text: #333; --button-violet-bg: #6f42c1; --button-violet-hover-bg: #5a349b; --button-violet-text: white; --button-suggestion-bg: #f8f8f8; --button-suggestion-hover-bg: #e8e8e8; --button-suggestion-border: #ccc; --button-disabled-bg: #cccccc; --button-disabled-opacity: 0.7; --input-bg: white; --input-border: #ccc; --input-text: #333; --header-area-bg: #f9f9f9; --header-area-border: #eee; --status-listening-color: #777; --status-base-color: #555; --suggestions-bg: #eef; --suggestions-border: #cce; --slider-thumb-bg: #007bff; --slider-track-bg: #ddd; --switch-bg: #ccc; --switch-thumb-bg: white; --switch-checked-bg: #007bff; --modal-overlay-bg: rgba(0, 0, 0, 0.6); --modal-content-bg: var(--container-bg); --modal-border: var(--border-color); --diff-added-bg: rgba(40, 167, 69, 0.2); --diff-removed-bg: rgba(220, 53, 69, 0.15); --diff-removed-text-decoration: line-through; --diff-added-excluded-decoration: line-through; --diff-added-excluded-color: var(--text-muted-color); --diff-added-excluded-opacity: 0.7; --diff-removed-included-decoration: none; --diff-removed-included-color: var(--text-color); --diff-removed-included-bg: rgba(108, 117, 125, 0.1); --theme-image-border: var(--border-color); } body.dark-mode { --bg-color: #22272e; --container-bg: #2d333b; --text-color: #adbac7; --text-muted-color: #768390; --heading-color: #adbac7; --border-color: #444c56; --border-light-color: #373e47; --border-dashed-color: #444c56; --link-color: #539bf5; --button-primary-bg: #377ef0; --button-primary-hover-bg: #539bf5; --button-secondary-bg: #444c56; --button-secondary-hover-bg: #5d6774; --button-secondary-text: #adbac7; --button-success-bg: #347d39; --button-success-hover-bg: #46954a; --button-success-text: white; --button-danger-bg: #e5534b; --button-danger-hover-bg: #f47067; --button-warning-bg: #d9971a; --button-warning-hover-bg: #f0b72f; --button-warning-text: #22272e; --button-info-bg: #4387d9; --button-info-hover-bg: #539bf5; --button-light-gray-bg: #373e47; --button-light-gray-hover-bg: #444c56; --button-light-gray-text: #adbac7; --button-violet-bg: #8a63d2; --button-violet-hover-bg: #9b7ae0; --button-violet-text: white; --button-suggestion-bg: #373e47; --button-suggestion-hover-bg: #444c56; --button-suggestion-border: #5d6774; --button-disabled-bg: #444c56; --input-bg: #22272e; --input-border: #444c56; --input-text: #adbac7; --header-area-bg: #22272e; --header-area-border: #373e47; --status-listening-color: #768390; --status-base-color: #768390; --suggestions-bg: #2d333b; --suggestions-border: #444c56; --slider-thumb-bg: #539bf5; --slider-track-bg: #444c56; --switch-bg: #444c56; --switch-thumb-bg: #768390; --switch-checked-bg: #377ef0; --modal-overlay-bg: rgba(0, 0, 0, 0.7); --modal-border: var(--border-color); --diff-added-bg: rgba(67, 160, 71, 0.3); --diff-removed-bg: rgba(211, 72, 54, 0.25); --diff-added-excluded-color: var(--text-muted-color); --diff-removed-included-color: var(--text-color); --diff-removed-included-bg: rgba(110, 123, 139, 0.15); --theme-image-border: var(--border-color); }
+        :root {
+            --bg-color: #f4f4f4; --container-bg: #fff; --text-color: #333; --text-muted-color: #555; --heading-color: #333; --border-color: #ccc; --border-light-color: #eee; --border-dashed-color: #ddd; --link-color: #007bff;
+            --button-primary-bg: #007bff; --button-primary-hover-bg: #0056b3; --button-primary-text: white; --button-secondary-bg: #6c757d; --button-secondary-hover-bg: #5a6268; --button-secondary-text: white;
+            --button-success-bg: #28a745; --button-success-hover-bg: #218838; --button-success-text: white; --button-danger-bg: #dc3545; --button-danger-hover-bg: #c82333; --button-danger-text: white; --button-warning-bg: #ffc107; --button-warning-hover-bg: #e0a800; --button-warning-text: #212529;
+            --button-info-bg: #17a2b8; --button-info-hover-bg: #138496; --button-info-text: white; --button-light-gray-bg: #e9e9e9; --button-light-gray-hover-bg: #d8d8d8; --button-light-gray-text: #333;
+            --button-violet-bg: #6f42c1; --button-violet-hover-bg: #5a349b; --button-violet-text: white;
+            --button-suggestion-bg: #f8f8f8; --button-suggestion-hover-bg: #e8e8e8; --button-suggestion-border: #ccc; --button-disabled-bg: #cccccc; --button-disabled-opacity: 0.7;
+            --input-bg: white; --input-border: #ccc; --input-text: #333; --header-area-bg: #f9f9f9; --header-area-border: #eee; --status-listening-color: #777; --status-base-color: #555; --suggestions-bg: #eef; --suggestions-border: #cce;
+            --slider-thumb-bg: #007bff; --slider-track-bg: #ddd; --switch-bg: #ccc; --switch-thumb-bg: white; --switch-checked-bg: #007bff;
+            --modal-overlay-bg: rgba(0, 0, 0, 0.6); --modal-content-bg: var(--container-bg); --modal-border: var(--border-color);
+            --diff-added-bg: rgba(40, 167, 69, 0.2); --diff-removed-bg: rgba(220, 53, 69, 0.15); --diff-removed-text-decoration: line-through;
+             --diff-added-excluded-decoration: line-through; --diff-added-excluded-color: var(--text-muted-color); --diff-added-excluded-opacity: 0.7;
+             --diff-removed-included-decoration: none; --diff-removed-included-color: var(--text-color); --diff-removed-included-bg: rgba(108, 117, 125, 0.1);
+             --theme-image-border: var(--border-color);
+        }
+        body.dark-mode {
+             --bg-color: #22272e; --container-bg: #2d333b; --text-color: #adbac7; --text-muted-color: #768390; --heading-color: #adbac7; --border-color: #444c56; --border-light-color: #373e47; --border-dashed-color: #444c56; --link-color: #539bf5;
+             --button-primary-bg: #377ef0; --button-primary-hover-bg: #539bf5; --button-secondary-bg: #444c56; --button-secondary-hover-bg: #5d6774; --button-secondary-text: #adbac7;
+             --button-success-bg: #347d39; --button-success-hover-bg: #46954a; --button-success-text: white; --button-danger-bg: #e5534b; --button-danger-hover-bg: #f47067;
+             --button-warning-bg: #d9971a; --button-warning-hover-bg: #f0b72f; --button-warning-text: #22272e; --button-info-bg: #4387d9; --button-info-hover-bg: #539bf5; --button-light-gray-bg: #373e47; --button-light-gray-hover-bg: #444c56; --button-light-gray-text: #adbac7;
+             --button-violet-bg: #8a63d2; --button-violet-hover-bg: #9b7ae0; --button-violet-text: white;
+             --button-suggestion-bg: #373e47; --button-suggestion-hover-bg: #444c56; --button-suggestion-border: #5d6774; --button-disabled-bg: #444c56; --input-bg: #22272e; --input-border: #444c56; --input-text: #adbac7;
+             --header-area-bg: #22272e; --header-area-border: #373e47; --status-listening-color: #768390; --status-base-color: #768390; --suggestions-bg: #2d333b; --suggestions-border: #444c56;
+             --slider-thumb-bg: #539bf5; --slider-track-bg: #444c56; --switch-bg: #444c56; --switch-thumb-bg: #768390; --switch-checked-bg: #377ef0;
+              --modal-overlay-bg: rgba(0, 0, 0, 0.7); --modal-border: var(--border-color);
+             --diff-added-bg: rgba(67, 160, 71, 0.3); --diff-removed-bg: rgba(211, 72, 54, 0.25);
+             --diff-added-excluded-color: var(--text-muted-color); --diff-removed-included-color: var(--text-color); --diff-removed-included-bg: rgba(110, 123, 139, 0.15);
+             --theme-image-border: var(--border-color);
+        }
         body { font-family: sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; transition: background-color 0.3s ease, color 0.3s ease; }
         #app-container { width: 100%; max-width: 1200px; margin: 0 auto; display: block; }
         .layout-wrapper { display: flex; flex-direction: row; gap: 25px; width: 100%; align-items: flex-start; }
@@ -76,7 +103,7 @@
          body.light-mode #batman-image { display: block; } body.dark-mode #joker-image { display: block; }
     </style>
 </head>
-<body class="light-mode"> <!-- Quitamos logged-out -->
+<body class="light-mode"> <!-- Quitar logged-out -->
 
     <!-- Contenedor Principal App (Visible siempre) -->
     <div id="app-container">
@@ -84,7 +111,7 @@
         <div class="layout-wrapper">
             <!-- Columna Izquierda -->
             <div class="main-content-area">
-                <div class="container title-container"> <h1>Dictado Radiológico <small>(v30)</small></h1> <div class="title-graphics"> <img id="batman-image" src="batman_light.jpg" alt="Batman"> <img id="joker-image" src="joker_dark.jpg" alt="Joker"> </div> </div>
+                <div class="container title-container"> <h1>Dictado Radiológico <small>(v30 Fix)</small></h1> <div class="title-graphics"> <img id="batman-image" src="batman_light.jpg" alt="Batman"> <img id="joker-image" src="joker_dark.jpg" alt="Joker"> </div> </div>
                 <div class="container controls"> <button id="toggleButton" class="start" disabled>Inicializando...</button> <button id="correctTextButton" disabled>Corregir</button> <button id="copyTextButton" disabled>Copiar</button> <button id="improveAIButton" disabled>Mejorar IA</button> <p id="status">Estado: Inicializando...</p> <p class="instructions"><em>Selecciona texto y pulsa "Corregir Selección".</em></p> </div>
                 <div class="container header-section"> <h3>Técnica Aplicada:</h3> <textarea id="headerArea" rows="3" placeholder="Selecciona técnica o escribe..."></textarea> </div>
                 <div class="container editor-container"> <textarea id="reportArea" placeholder="El informe aparecerá aquí..." ></textarea> </div>
@@ -116,7 +143,7 @@
         // =============================================
         async function initializeDictationApp() {
             // Definir userId fijo (reemplaza el obtenido de Auth)
-            const currentUserId = window.fixedUserId || "usuario_test_001"; // Usar el global o un fallback
+            const currentUserId = window.fixedUserId || "usuario_test_001"; // Usar el global definido antes o fallback
             console.log(`Iniciando App para User ID (fijo): ${currentUserId}`);
 
             // --- Selección DOM App ---
@@ -144,13 +171,33 @@
             function initializeThreshold() { fuzzyThresholdSlider.value = currentFuzzyThreshold.toString(); fuzzyThresholdValueSpan.textContent = currentFuzzyThreshold.toFixed(2); }
             function processLoadedVocabularyData(rulesData, learnedData) { customVocabulary = rulesData || {}; learnedCorrections = learnedData || {}; customVocabularyKeys = Object.keys(customVocabulary); updateSortedKeys(); initializeFuse(); console.log(`Vocab procesado: ${customVocabularyKeys.length} reglas, ${Object.keys(learnedCorrections).length} aprendidas.`); statusDiv.textContent = 'Listo'; toggleButton.disabled = false; toggleButton.textContent = 'Empezar Dictado'; toggleButton.classList.remove('stop'); toggleButton.classList.add('start'); correctTextButton.disabled = false; copyTextButton.disabled = false; manageVocabButton.disabled = false; improveAIButton.disabled = false; }
             async function loadVocabularyFromFirestore() { console.log(`Cargando vocab para ${currentUserId}`); toggleButton.disabled = true; toggleButton.textContent = 'Cargando...'; correctTextButton.disabled = true; copyTextButton.disabled = true; manageVocabButton.disabled = true; improveAIButton.disabled = true; statusDiv.textContent = 'Cargando datos...'; try { const docSnap = await getDoc(vocabDocRef); if (docSnap.exists()) { const data = docSnap.data(); const rulesMap = (data && typeof data.rulesMap === 'object' && data.rulesMap !== null) ? data.rulesMap : {}; const learnedMap = (data && typeof data.learnedMap === 'object' && data.learnedMap !== null) ? data.learnedMap : {}; processLoadedVocabularyData(rulesMap, learnedMap); } else { processLoadedVocabularyData({}, {}); } } catch (error) { console.error("Error cargando vocab:", error); alert("Error al cargar vocabulario."); processLoadedVocabularyData({}, {}); statusDiv.textContent = 'Error carga vocab.'; toggleButton.textContent = 'Error Carga'; } }
-            async function saveVocabularyToFirestore(vocabToSave, learnedToSave) { console.log(`Guardando ${Object.keys(vocabToSave).length} reglas y ${Object.keys(learnedToSave).length} correcciones para ${currentUserId}...`); try { await setDoc(vocabDocRef, { rulesMap: vocabToSave, learnedMap: learnedToSave }); console.log("Datos guardados Firestore (overwrite)."); } catch (error) { console.error("Error guardando Firestore:", error); alert("Error al guardar en DB."); throw error; } }
+            // REVISADO: saveVocabularyToFirestore usa setDoc sin merge
+             async function saveVocabularyToFirestore(vocabToSave, learnedToSave) {
+                 console.log(`[saveVocabFirestore] Guardando ${Object.keys(vocabToSave).length} reglas y ${Object.keys(learnedToSave).length} correcciones para ${currentUserId}...`);
+                 const rulesMapCopy = { ...vocabToSave }; const learnedMapCopy = { ...learnedToSave };
+                 console.log("[saveVocabFirestore] rulesMap:", JSON.stringify(rulesMapCopy).substring(0, 200) + "...");
+                 console.log("[saveVocabFirestore] learnedMap:", JSON.stringify(learnedMapCopy));
+                 try {
+                     await setDoc(vocabDocRef, { rulesMap: rulesMapCopy, learnedMap: learnedMapCopy }); // Sobrescribir documento completo
+                     console.log("[saveVocabFirestore] Datos guardados exitosamente (sobrescribiendo).");
+                 } catch (error) {
+                     console.error("[saveVocabFirestore] ERROR guardando:", error);
+                     alert("Error al guardar en DB.");
+                     throw error; // Propagar error
+                 }
+             }
             function updateSortedKeys() { sortedVocabKeys = Object.keys(customVocabulary).sort((a, b) => b.length - a.length); }
             function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
             function normalizeText(text) { if (!text) return ''; return text.toLowerCase().replace(/[.,:;!?()]/g, '').replace(/\s+/g, ' ').trim(); }
 
              // --- Lógica Fuzzy, Sugerencias y Aprendizaje ---
-            function applyLearnedCorrections(text) { /* ... */ return text; } function checkFuzzyMatches(originalText) { /* ... */ } function applyCustomVocabulary(text) { /* ... */ return text; } function displayFuzzySuggestion(suggestionData = null) { /* ... */ } async function handleAddFuzzyRule(event) { /* ... */ } function handleDismissFuzzy(event) { /* ... */ } function clearSuggestions() { /* ... */ }
+            function applyLearnedCorrections(text) { let correctedText = text; const textLower = text.toLowerCase(); for (const mistakeNorm in learnedCorrections) { const correctionData = learnedCorrections[mistakeNorm]; if (correctionData.count >= LEARNED_CORRECTION_THRESHOLD) { try { const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistakeNorm)}\\b`, 'gi'); if (mistakeRegex.test(correctedText)) { console.log(`Applying learned correction: "${mistakeNorm}" -> "${correctionData.correctKey}"`); correctedText = correctedText.replace(mistakeRegex, correctionData.correctKey); } } catch (e) {} } } return correctedText; }
+            function checkFuzzyMatches(originalText) { if (!fuse || !originalText || originalText.length < FUSE_DEFAULTS.minMatchCharLength) return; const normalizedOriginal = normalizeText(originalText); if (!normalizedOriginal || fuzzyMatchesFound.has(normalizedOriginal)) return; const results = fuse.search(normalizedOriginal); if (results.length > 0) { const bestMatch = results[0]; if (bestMatch.score < currentFuzzyThreshold + 0.001) { const matchedKey = bestMatch.item; const suggestedValue = customVocabulary[matchedKey]; if (matchedKey !== normalizedOriginal) { const suggestionData = { original: originalText, matchedKey: matchedKey, suggestedValue: suggestedValue, score: bestMatch.score }; fuzzyMatchesFound.set(normalizedOriginal, suggestionData); displayFuzzySuggestion(suggestionData); }}}}
+            function applyCustomVocabulary(text) { let p = text; for (const key of sortedVocabKeys) { const v = customVocabulary[key]; try { const r = new RegExp(`\\b${escapeRegExp(key)}\\b`, 'gi'); p = p.replace(r, v); } catch (e) {} } return p; }
+            function displayFuzzySuggestion(suggestionData = null) { if (!suggestionData && fuzzyMatchesFound.size === 0) { fuzzySuggestionsList.innerHTML = '<small>No hay sugerencias.</small>'; return; } if (fuzzyMatchesFound.size === 1 && suggestionData) { fuzzySuggestionsList.innerHTML = ''; } if (suggestionData) { const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerHTML = `<span class="suggestion-text">"${suggestionData.original}" (${(suggestionData.score*100).toFixed(0)}%) ≈ "${suggestionData.matchedKey}". ¿Usar: "<strong>${suggestionData.suggestedValue}</strong>"?</span><span class="suggestion-actions"><button data-original="${suggestionData.original}" data-matched-key="${suggestionData.matchedKey}" data-suggested-value="${suggestionData.suggestedValue}">Añadir Regla</button><button data-dismiss-key="${normalizeText(suggestionData.original)}">Ignorar</button></span>`; item.querySelector('[data-original]').addEventListener('click', handleAddFuzzyRule); item.querySelector('[data-dismiss-key]').addEventListener('click', handleDismissFuzzy); fuzzySuggestionsList.appendChild(item); } }
+            async function handleAddFuzzyRule(event) { const btn = event.target; const original = btn.dataset.original; const suggestedValue = btn.dataset.suggestedValue; const originalLower = original.toLowerCase(); const matchedKeyLower = btn.dataset.matchedKey.toLowerCase(); const tempVocab = { ...customVocabulary }; const tempLearned = { ...learnedCorrections }; let vocabChanged = false; if (!tempVocab.hasOwnProperty(originalLower)) { tempVocab[originalLower] = suggestedValue; vocabChanged = true; } const mistakeNorm = normalizeText(original); const correctKeyNorm = normalizeText(matchedKeyLower); if (!tempLearned[mistakeNorm]) { tempLearned[mistakeNorm] = { correctKey: correctKeyNorm, count: 0 }; } tempLearned[mistakeNorm].count++; console.log(`Contador para "${mistakeNorm}": ${tempLearned[mistakeNorm].count}`); try { await saveVocabularyToFirestore(tempVocab, tempLearned); customVocabulary = tempVocab; learnedCorrections = tempLearned; processLoadedVocabularyData(customVocabulary, learnedCorrections); alert(`Regla "${original} -> ${suggestedValue}" añadida/confirmada.`); btn.closest('.suggestion-item').remove(); if (fuzzySuggestionsList.childElementCount === 0) fuzzySuggestionsList.innerHTML = '<small>No hay sugerencias.</small>'; fuzzyMatchesFound.delete(normalizeText(original)); } catch (error) { alert("Error al guardar cambios."); } }
+            function handleDismissFuzzy(event) { const btn = event.target; const keyToDismiss = btn.dataset.dismissKey; fuzzyMatchesFound.delete(keyToDismiss); btn.closest('.suggestion-item').remove(); if (fuzzySuggestionsList.childElementCount === 0) fuzzySuggestionsList.innerHTML = '<small>No hay sugerencias.</small>'; }
+            function clearSuggestions() { fuzzyMatchesFound.clear(); fuzzySuggestionsList.innerHTML = '<small>No hay sugerencias.</small>'; }
 
             // --- Lógica Principal Reconocimiento ---
             if (SpeechRecognition) {
