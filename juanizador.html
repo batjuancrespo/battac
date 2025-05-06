@@ -4,67 +4,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente de Informes Radiológicos</title>
     <style>
+        /* --- CSS Variables from index.html --- */
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #34495e;
+            --bg-color: #f4f4f4; --container-bg: #fff; --text-color: #333; --text-muted-color: #555; --heading-color: #333; --border-color: #ccc; --border-light-color: #eee; --border-dashed-color: #ddd; --link-color: #007bff;
+            --button-primary-bg: #007bff; --button-primary-hover-bg: #0056b3; --button-primary-text: white; --button-secondary-bg: #6c757d; --button-secondary-hover-bg: #5a6268; --button-secondary-text: white;
+            --button-success-bg: #28a745; --button-success-hover-bg: #218838; --button-success-text: white; --button-danger-bg: #dc3545; --button-danger-hover-bg: #c82333; --button-danger-text: white; --button-warning-bg: #ffc107; --button-warning-hover-bg: #e0a800; --button-warning-text: #212529;
+            --button-info-bg: #17a2b8; --button-info-hover-bg: #138496; --button-info-text: white; --button-light-gray-bg: #e9e9e9; --button-light-gray-hover-bg: #d8d8d8; --button-light-gray-text: #333;
+            --button-violet-bg: #6f42c1; --button-violet-hover-bg: #5a349b; --button-violet-text: white;
+            --button-suggestion-bg: #f8f8f8; --button-suggestion-hover-bg: #e8e8e8; --button-suggestion-border: #ccc; --button-disabled-bg: #cccccc; --button-disabled-opacity: 0.7;
+            --input-bg: white; --input-border: #ccc; --input-text: #333; --header-area-bg: #f9f9f9; --header-area-border: #eee; --status-listening-color: #777; --status-base-color: #555;
+            --slider-thumb-bg: #007bff; --slider-track-bg: #ddd; --switch-bg: #ccc; --switch-thumb-bg: white; --switch-checked-bg: #007bff;
+            /* Specific to juanizador, but using index.html theme variables */
+            --juanizador-accent-color: var(--button-danger-bg); /* Was --accent-color: #e74c3c; */
+            --juanizador-secondary-color: var(--button-primary-bg); /* Was --secondary-color: #3498db; */
+            --juanizador-primary-color: var(--heading-color); /* Was --primary-color: #2c3e50; */
+            --juanizador-dark-color: #34495e; /* A darker shade, can be derived or kept specific if needed */
+        }
+
+        body.dark-mode {
+             --bg-color: #22272e; --container-bg: #2d333b; --text-color: #adbac7; --text-muted-color: #768390; --heading-color: #adbac7; --border-color: #444c56; --border-light-color: #373e47; --border-dashed-color: #444c56; --link-color: #539bf5;
+             --button-primary-bg: #377ef0; --button-primary-hover-bg: #539bf5; --button-secondary-bg: #444c56; --button-secondary-hover-bg: #5d6774; --button-secondary-text: #adbac7;
+             --button-success-bg: #347d39; --button-success-hover-bg: #46954a; --button-danger-bg: #e5534b; --button-danger-hover-bg: #f47067;
+             --button-warning-bg: #d9971a; --button-warning-hover-bg: #f0b72f; --button-warning-text: #22272e; --button-info-bg: #4387d9; --button-info-hover-bg: #539bf5; --button-light-gray-bg: #373e47; --button-light-gray-hover-bg: #444c56; --button-light-gray-text: #adbac7;
+             --button-violet-bg: #8a63d2; --button-violet-hover-bg: #9b7ae0;
+             --button-suggestion-bg: #373e47; --button-suggestion-hover-bg: #444c56; --button-suggestion-border: #5d6774; --button-disabled-bg: #444c56; --input-bg: #22272e; --input-border: #444c56; --input-text: #adbac7;
+             --header-area-bg: #22272e; --header-area-border: #373e47; --status-listening-color: #768390; --status-base-color: #768390;
+             --slider-thumb-bg: #539bf5; --slider-track-bg: #444c56; --switch-bg: #444c56; --switch-thumb-bg: #768390; --switch-checked-bg: #377ef0;
+            /* Specific to juanizador, dark mode adaptations */
+            --juanizador-accent-color: var(--button-danger-bg);
+            --juanizador-secondary-color: var(--button-primary-bg);
+            --juanizador-primary-color: var(--heading-color);
+            --juanizador-dark-color: #5d6774; /* Darker shade for dark mode */
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: var(--light-color);
-            color: var(--primary-color);
+            padding: 20px; /* Added padding similar to index.html body */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .container {
+        #app-container-juanizador { /* New main wrapper */
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
 
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            /* padding: 10px 0; */ /* Modified for new button */
-            text-align: center;
-            border-radius: 5px;
+        .page-header {
+            background-color: var(--container-bg);
+            color: var(--heading-color);
+            padding: 15px 25px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            /* Added for new button */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
-        header h1 { /* Ensure h1 doesn't take full width if button is there */
+        .page-header h1 {
             margin: 0;
-            flex-grow: 1; /* Allow h1 to take space */
-            text-align: center; /* Keep it centered if possible*/
+            font-size: 1.8em;
+            flex-grow: 1;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
 
-        .main-content {
+        /* Styling for container-like sections */
+        .juanizador-section {
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light-color);
+        }
+
+        .main-content-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        .input-section, .output-section {
-            background-color: white;
-            border-radius: 5px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
         .section-title {
             margin-top: 0;
             padding-bottom: 10px;
-            border-bottom: 2px solid var(--secondary-color);
-            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-light-color); /* Matched to index.html h3 border */
+            color: var(--juanizador-primary-color);
+            font-size: 1.5em; /* Adjusted for consistency */
         }
 
         .voice-input {
@@ -73,22 +108,22 @@
         }
 
         #microphone-btn {
-            background-color: var(--secondary-color);
-            color: white;
+            background-color: var(--juanizador-secondary-color);
+            color: var(--button-primary-text);
             border: none;
             padding: 10px 20px;
             border-radius: 50px;
             cursor: pointer;
             font-size: 16px;
-            display: flex;
+            display: inline-flex; /* Changed from flex to inline-flex for better centering with margin:auto */
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
+            /* margin: 0 auto; */ /* Centering done by text-align on parent */
             transition: all 0.3s ease;
         }
 
         #microphone-btn:hover {
-            background-color: var(--dark-color);
+            background-color: var(--juanizador-dark-color);
         }
 
         #microphone-btn svg {
@@ -98,28 +133,28 @@
         }
 
         #microphone-btn.recording {
-            background-color: var(--accent-color);
+            background-color: var(--juanizador-accent-color);
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
-        #transcript {
+        #transcript, .category-reassign, .selector-group select { /* General input styling */
             width: 100%;
-            min-height: 150px;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            border-radius: 5px; /* Matched to index.html */
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            font-size: 1em; /* Matched to index.html */
+            box-sizing: border-box; /* Important for width 100% */
+        }
+        #transcript {
+            min-height: 150px;
             resize: vertical;
             margin-bottom: 20px;
         }
@@ -129,64 +164,73 @@
         }
 
         .category {
-            background-color: #f8f9fa;
-            border-left: 4px solid var(--secondary-color);
-            padding: 10px;
+            background-color: var(--header-area-bg); /* Light gray background */
+            border-left: 4px solid var(--juanizador-secondary-color);
+            padding: 15px; /* Increased padding */
             margin-bottom: 10px;
             border-radius: 0 5px 5px 0;
         }
 
         .category h3 {
             margin-top: 0;
-            color: var(--dark-color);
+            margin-bottom: 8px; /* Added margin */
+            color: var(--heading-color); /* Matched to index.html */
         }
 
         .category-content {
             margin-left: 10px;
-            color: #666;
+            color: var(--text-muted-color); /* Matched to index.html */
         }
+        .category-content ul {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+
 
         #final-report {
             white-space: pre-wrap;
-            background-color: #f8f9fa;
+            background-color: var(--header-area-bg);
             padding: 15px;
             border-radius: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
+            min-height: 100px; /* Ensure it has some height */
+            color: var(--text-color);
         }
 
-        .buttons {
+        .buttons-group { /* Renamed from .buttons to avoid potential global conflicts if styles were merged */
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
         }
 
-        .btn {
-            background-color: var(--secondary-color);
-            color: white;
+        .btn { /* General button styling from index.html */
+            color: var(--button-primary-text);
             border: none;
-            padding: 10px 15px;
+            padding: 10px 15px; /* Adjusted padding */
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 0.95em; /* Adjusted font size */
             flex: 1;
             transition: background-color 0.3s ease;
+            text-align: center;
+            min-width: 100px; /* Minimum width */
+        }
+        /* Specific button colors - mapping to index.html styles */
+        .btn.btn-main { background-color: var(--button-primary-bg); }
+        .btn.btn-main:hover { background-color: var(--button-primary-hover-bg); }
+
+        .btn.btn-danger { background-color: var(--button-danger-bg); color: var(--button-danger-text); }
+        .btn.btn-danger:hover { background-color: var(--button-danger-hover-bg); }
+
+        .btn.btn-success { background-color: var(--button-success-bg); color: var(--button-success-text); }
+        .btn.btn-success:hover { background-color: var(--button-success-hover-bg); }
+
+        #backToDictationBtn { /* Specific styling for this button if needed, inherits .btn and .btn-danger */
+            flex: 0 1 auto; /* Don't grow, allow shrink, auto basis */
+            padding: 8px 15px;
+            font-size: 0.9em;
         }
 
-        .btn:hover {
-            background-color: var(--dark-color);
-        }
-
-        .btn-danger {
-            background-color: var(--accent-color);
-        }
-         .btn-danger:hover {
-            background-color: #c0392b; /* Darker red */
-        }
-
-
-        .btn-success {
-            background-color: #27ae60;
-        }
 
         .loading {
             text-align: center;
@@ -199,96 +243,92 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border-left-color: var(--secondary-color);
+            border-left-color: var(--juanizador-secondary-color); /* Use a theme color */
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .status-message {
             margin-top: 10px;
             font-style: italic;
-            color: #666;
+            color: var(--text-muted-color);
         }
 
-        .technique-selector {
-            display: flex;
+        .technique-selector-grid { /* Changed from .technique-selector to use grid for better layout */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
             gap: 20px;
-            margin-bottom: 20px;
-            background-color: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            /* margin-bottom: 20px; */ /* Handled by .juanizador-section */
         }
 
         .selector-group {
             display: flex;
             flex-direction: column;
-            min-width: 200px;
         }
 
         .selector-group label {
-            margin-bottom: 5px;
+            margin-bottom: 8px; /* Increased margin */
             font-weight: bold;
-            color: var(--primary-color);
+            color: var(--heading-color); /* Matched to index.html */
         }
 
-        .selector-group select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: white;
-            font-size: 14px;
-        }
+        /* .selector-group select styling is handled by the general input styling */
 
         .technique-description {
             margin-bottom: 20px;
-            background-color: #f8f9fa;
-            padding: 10px 15px;
+            background-color: var(--header-area-bg);
+            padding: 15px;
             border-radius: 5px;
-            border-left: 4px solid var(--secondary-color);
+            border-left: 4px solid var(--juanizador-secondary-color);
         }
 
         .technique-description h3 {
             margin-top: 0;
             margin-bottom: 10px;
-            color: var(--dark-color);
+            color: var(--heading-color);
         }
 
         .technique-description p {
             margin: 0;
+            color: var(--text-color);
         }
 
         .checkbox-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px; /* Increased gap */
         }
 
         .checkbox-group label {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px; /* Increased gap */
             font-weight: normal;
+            color: var(--text-color);
+            cursor: pointer;
         }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+            accent-color: var(--juanizador-secondary-color);
+        }
+
 
         .finding-item {
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 5px 0; /* Added padding */
         }
 
         .finding-text {
             flex: 1;
+            margin-right: 10px; /* Added margin */
         }
 
         .finding-controls {
@@ -296,89 +336,120 @@
             gap: 5px;
         }
 
-        .category-reassign {
-            padding: 3px 5px;
-            font-size: 12px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            background-color: white;
-            color: var(--primary-color);
+        .category-reassign { /* Styling inherited from general input styling */
+            padding: 5px 8px; /* Adjusted padding */
+            font-size: 0.85em; /* Adjusted font size */
+            min-width: 150px; /* Minimum width */
         }
 
-        @media (max-width: 768px) {
-            .main-content {
+        /* Theme Switch Styles from index.html */
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display: none; }
+        .slider.round { background-color: var(--switch-bg); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider.round:before { background-color: var(--switch-thumb-bg); bottom: 3px; content: ""; height: 18px; left: 3px; position: absolute; transition: .4s; width: 18px; border-radius: 50%; }
+        input:checked + .slider.round { background-color: var(--switch-checked-bg); }
+        input:checked + .slider.round:before { transform: translateX(24px); }
+        .theme-switch-wrapper span { margin-left: 8px; font-size: 0.9em; color: var(--text-muted-color); }
+
+
+        @media (max-width: 992px) { /* Adjusted breakpoint */
+            .main-content-grid {
                 grid-template-columns: 1fr;
             }
-             header {
+        }
+        @media (max-width: 768px) {
+            .page-header {
                 flex-direction: column;
-             }
-             header h1 {
+                gap: 10px;
+                align-items: flex-start; /* Align items to start for column layout */
+            }
+            .page-header h1 {
+                text-align: left;
                  margin-bottom: 10px;
-             }
-             header button#backToDictationBtn {
-                 width: 100%;
+            }
+            .header-controls {
+                width: 100%;
+                justify-content: space-between; /* Space out button and switch */
+            }
+            #backToDictationBtn {
+                 /* width: 100%; */ /* Allow button to size naturally */
                  margin-left: 0;
-             }
+            }
+            .technique-selector-grid {
+                grid-template-columns: 1fr; /* Stack selectors on small screens */
+            }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
+<body class="light-mode"> <!-- Default to light mode -->
+    <div id="app-container-juanizador">
+        <header class="page-header">
             <h1>Asistente de Informes Radiológicos</h1>
-            <button id="backToDictationBtn" class="btn btn-danger" style="margin-left: 20px; flex-shrink: 0; flex-basis: auto; flex-grow: 0;">Volver a dictado</button>
+            <div class="header-controls">
+                <button id="backToDictationBtn" class="btn btn-danger">Volver a dictado</button>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="themeToggleCheckboxJuanizador">
+                        <input type="checkbox" id="themeToggleCheckboxJuanizador">
+                        <span class="slider round"></span>
+                    </label>
+                    <span id="themeToggleLabelJuanizador">Tema Oscuro</span>
+                </div>
+            </div>
         </header>
         
-        <div class="technique-selector">
-            <div class="selector-group">
-                <label for="imaging-technique">Técnica de Imagen:</label>
-                <select id="imaging-technique">
-                    <option value="tac">TAC</option>
-                    <option value="rm">RM</option>
-                    <option value="eco">Ecografía</option>
-                </select>
-            </div>
-            
-            <div class="selector-group" id="tac-scope-container">
-                <label for="tac-scope">Alcance del TAC:</label>
-                <select id="tac-scope">
-                    <option value="toracoabdominal">Toracoabdominal</option>
-                    <option value="torax">Torácico</option>
-                    <option value="abdomen">Abdominal</option>
-                </select>
-            </div>
-            
-            <div class="selector-group" id="rm-type-container" style="display: none;">
-                <label for="rm-type">Tipo de RM:</label>
-                <select id="rm-type">
-                    <option value="hepatica">RM Hepática</option>
-                    <option value="colangio">ColangioRM</option>
-                    <option value="pelvis-neo">RM Pelvis NEO</option>
-                    <option value="pelvis-fist">RM Pelvis FIST</option>
-                    <option value="entero">EnteroRM</option>
-                </select>
-            </div>
-            
-            <div class="selector-group" id="contrast-container">
-                <label for="contrast-use">Contraste:</label>
-                <select id="contrast-use">
-                    <option value="sin">Sin contraste</option>
-                    <option value="con">Con contraste</option>
-                </select>
-            </div>
-            
-            <div class="selector-group" id="phase-container" style="display: none;">
-                <label for="contrast-phase">Fase:</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" name="phase" value="arterial"> Arterial</label>
-                    <label><input type="checkbox" name="phase" value="portal"> Portal</label>
-                    <label><input type="checkbox" name="phase" value="tardia"> Tardía</label>
+        <div class="juanizador-section technique-selector">
+            <div class="technique-selector-grid">
+                <div class="selector-group">
+                    <label for="imaging-technique">Técnica de Imagen:</label>
+                    <select id="imaging-technique">
+                        <option value="tac">TAC</option>
+                        <option value="rm">RM</option>
+                        <option value="eco">Ecografía</option>
+                    </select>
+                </div>
+                
+                <div class="selector-group" id="tac-scope-container">
+                    <label for="tac-scope">Alcance del TAC:</label>
+                    <select id="tac-scope">
+                        <option value="toracoabdominal">Toracoabdominal</option>
+                        <option value="torax">Torácico</option>
+                        <option value="abdomen">Abdominal</option>
+                    </select>
+                </div>
+                
+                <div class="selector-group" id="rm-type-container" style="display: none;">
+                    <label for="rm-type">Tipo de RM:</label>
+                    <select id="rm-type">
+                        <option value="hepatica">RM Hepática</option>
+                        <option value="colangio">ColangioRM</option>
+                        <option value="pelvis-neo">RM Pelvis NEO</option>
+                        <option value="pelvis-fist">RM Pelvis FIST</option>
+                        <option value="entero">EnteroRM</option>
+                    </select>
+                </div>
+                
+                <div class="selector-group" id="contrast-container">
+                    <label for="contrast-use">Contraste:</label>
+                    <select id="contrast-use">
+                        <option value="sin">Sin contraste</option>
+                        <option value="con">Con contraste</option>
+                    </select>
+                </div>
+                
+                <div class="selector-group" id="phase-container" style="display: none;">
+                    <label for="contrast-phase">Fase:</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="phase" value="arterial"> Arterial</label>
+                        <label><input type="checkbox" name="phase" value="portal"> Portal</label>
+                        <label><input type="checkbox" name="phase" value="tardia"> Tardía</label>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="main-content">
-            <div class="input-section">
+        <div class="main-content-grid">
+            <div class="juanizador-section input-section">
                 <h2 class="section-title">Entrada de Hallazgos</h2>
                 
                 <div class="voice-input">
@@ -393,8 +464,8 @@
                 
                 <textarea id="transcript" placeholder="Los hallazgos dictados aparecerán aquí..."></textarea>
                 
-                <div class="buttons">
-                    <button id="categorize-btn" class="btn">Categorizar Hallazgos</button>
+                <div class="buttons-group">
+                    <button id="categorize-btn" class="btn btn-main">Categorizar Hallazgos</button>
                     <button id="clear-btn" class="btn btn-danger">Limpiar</button>
                 </div>
                 
@@ -408,12 +479,12 @@
                 </div>
             </div>
             
-            <div class="output-section">
+            <div class="juanizador-section output-section">
                 <h2 class="section-title">Informe Final</h2>
                 
-                <div class="buttons">
+                <div class="buttons-group">
                     <button id="generate-report-btn" class="btn btn-success">Generar Informe</button>
-                    <button id="copy-report-btn" class="btn">Copiar Informe</button>
+                    <button id="copy-report-btn" class="btn btn-main">Copiar Informe</button>
                 </div>
                 
                 <div class="loading" id="report-loading">
@@ -421,7 +492,7 @@
                     <p class="status-message">Generando informe completo...</p>
                 </div>
                 
-                <div class="technique-description" id="technique-description">
+                <div class="technique-description" id="technique-description" style="display:none;">
                     <h3>Técnica</h3>
                     <p id="technique-text"></p>
                 </div>
@@ -436,11 +507,36 @@
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
+        // --- Theme Toggle Logic ---
+        const themeToggleCheckboxJuanizador = document.getElementById('themeToggleCheckboxJuanizador');
+        const themeToggleLabelJuanizador = document.getElementById('themeToggleLabelJuanizador');
+
+        function applyThemeJuanizador(theme) {
+            const classToAdd = theme === 'dark' ? 'dark-mode' : 'light-mode';
+            const classToRemove = theme === 'dark' ? 'light-mode' : 'dark-mode';
+            document.body.classList.remove(classToRemove);
+            document.body.classList.add(classToAdd);
+            if (themeToggleCheckboxJuanizador) themeToggleCheckboxJuanizador.checked = theme === 'dark';
+            if (themeToggleLabelJuanizador) themeToggleLabelJuanizador.textContent = theme === 'dark' ? 'Tema Claro' : 'Tema Oscuro';
+        }
+
+        function toggleThemeJuanizador() {
+            const currentTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+            applyThemeJuanizador(currentTheme);
+            localStorage.setItem('themePreferenceJuanizador', currentTheme);
+        }
+
+        if (themeToggleCheckboxJuanizador) {
+            themeToggleCheckboxJuanizador.addEventListener('change', toggleThemeJuanizador);
+        }
+        // --- End Theme Toggle ---
+
+
         /*********************
          * CONFIG CONSTANTS
          *********************/
         // API Configuration
-        const API_KEY = 'AIzaSyBsKWbE6KgNaolK9BxDNDdviNw3pM7sOv0'; // Preserved API Key
+        const API_KEY = 'AIzaSyBsKWbE6KgNaolK9BxDNDdviNw3pM7sOv0'; 
         const MODEL_NAME = 'gemini-1.5-flash';
 
         // Initialize the Google GenAI API
@@ -486,13 +582,12 @@
         /*********************
          * SPEECH RECOGNITION
          *********************/
-        // Variables para el reconocimiento de voz
         let recognition;
         let isRecording = false;
-        let transcriptArea; // Declared here to be accessible
+        let transcriptArea; 
 
-        // Inicializar reconocimiento de voz si está disponible
         function initSpeechRecognition() {
+            const microphoneBtn = document.getElementById('microphone-btn');
             if ('webkitSpeechRecognition' in window) {
                 recognition = new webkitSpeechRecognition();
                 recognition.continuous = true;
@@ -504,86 +599,67 @@
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
                         if (event.results[i].isFinal) {
                             let transcript = event.results[i][0].transcript;
-                            
-                            // Convertir comandos de dictado a puntuación
                             transcript = transcript.replace(/\s+punto(\s+|$)/gi, '. ');
                             transcript = transcript.replace(/\s+coma(\s+|$)/gi, ', ');
-                            
                             finalTranscript += transcript;
                         }
                     }
-                    
-                    if (finalTranscript) {
-                        // Insertar o reemplazar el texto seleccionado
-                        insertAtCaret(transcriptArea, finalTranscript);
-                    }
+                    if (finalTranscript) insertAtCaret(transcriptArea, finalTranscript);
                 };
                 
                 recognition.onerror = (event) => {
                     console.error('Error en reconocimiento de voz:', event.error);
-                    toggleRecording();
+                    if (isRecording) toggleRecording(); // Stop if it was recording
                 };
             } else {
-                const microphoneBtn = document.getElementById('microphone-btn'); // Get it here
-                microphoneBtn.textContent = 'Reconocimiento de voz no soportado';
+                microphoneBtn.innerHTML = '<span>Reconocimiento no soportado</span>';
                 microphoneBtn.disabled = true;
             }
         }
 
-        // Función para insertar texto en la posición del cursor o reemplazar la selección
         function insertAtCaret(textArea, text) {
             const start = textArea.selectionStart;
             const end = textArea.selectionEnd;
-            
-            // Reemplazar el texto seleccionado
             textArea.value = textArea.value.substring(0, start) + text + textArea.value.substring(end);
-            
-            // Mover el cursor al final del texto insertado
             textArea.selectionStart = textArea.selectionEnd = start + text.length;
-            
-            // Añadir un espacio después del punto o la coma si es el final del texto
             if (text === "." || text === ",") {
                 textArea.value = textArea.value.substring(0, start + 1) + " " + textArea.value.substring(start + 1);
                 textArea.selectionStart = textArea.selectionEnd = start + 2;
             }
         }
 
-        // Alternar grabación
         function toggleRecording() {
-            const microphoneBtn = document.getElementById('microphone-btn'); // Get it here
-            if (recognition) {
-                if (isRecording) {
-                    recognition.stop();
-                    microphoneBtn.classList.remove('recording');
-                    microphoneBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                        </svg>
-                        Iniciar Dictado
-                    `;
-                } else {
-                    recognition.start();
-                    microphoneBtn.classList.add('recording');
-                    microphoneBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                        </svg>
-                        Detener Dictado
-                    `;
-                }
-                isRecording = !isRecording;
+            const microphoneBtn = document.getElementById('microphone-btn');
+            if (!recognition) return;
+            if (isRecording) {
+                recognition.stop();
+                microphoneBtn.classList.remove('recording');
+                microphoneBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                    Iniciar Dictado
+                `;
+            } else {
+                recognition.start();
+                microphoneBtn.classList.add('recording');
+                microphoneBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                    Detener Dictado
+                `;
             }
+            isRecording = !isRecording;
         }
 
         /*********************
          * API SERVICE
          *********************/
-        // Variables globales para API
         let categorizedFindings = {};
 
-        // Función para consultar la API de Gemini
         async function queryGeminiAPI(prompt) {
             try {
                 const result = await model.generateContent(prompt);
@@ -595,10 +671,9 @@
             }
         }
 
-        // Categorizar hallazgos
         async function categorizeFindings(availableCategories = []) {
             const transcript = document.getElementById('transcript').value.trim();
-            const categorizedContent = document.getElementById('categorized-content');
+            const categorizedContentEl = document.getElementById('categorized-content'); // Renamed for clarity
             const categorizingLoading = document.getElementById('categorizing-loading');
             const imagingTechniqueSelect = document.getElementById('imaging-technique');
             const tacScopeSelect = document.getElementById('tac-scope');
@@ -609,11 +684,7 @@
             }
             
             categorizingLoading.style.display = 'block';
-            
-            // Añadir siempre la categoría "Otros hallazgos"
-            if (!availableCategories.includes(13)) {
-                availableCategories.push(13);
-            }
+            if (!availableCategories.includes(13)) availableCategories.push(13);
             
             const filteredCategories = anatomicalCategories.filter(cat => 
                 availableCategories.length === 0 || availableCategories.includes(cat.id)
@@ -622,83 +693,46 @@
             const categoryNames = filteredCategories.map(cat => `${cat.id}. ${cat.name}`).join('\n');
             const technique = imagingTechniqueSelect.value;
             const tacScope = technique === 'tac' ? tacScopeSelect.value : null;
-            
-            // Cargar diccionario de aprendizaje
             let learningDictionary = JSON.parse(localStorage.getItem('findingsLearningDictionary')) || {};
             
             const prompt = `
             Eres un radiólogo experto que debe categorizar los siguientes hallazgos radiológicos en las categorías anatómicas apropiadas.
-            
             La técnica de imagen es: ${technique.toUpperCase()}${tacScope ? ` (${tacScope})` : ''}
-            
-            Las categorías disponibles son:
-            ${categoryNames}
-            
-            Hallazgos a categorizar:
-            ${transcript}
-            
-            ${Object.keys(learningDictionary).length > 0 ? `
-            Aquí hay ejemplos de hallazgos y cómo han sido categorizados previamente:
-            ${Object.entries(learningDictionary).map(([finding, categoryId]) => 
-                `"${finding}" => Categoría ${categoryId}`).join('\n')}
-            ` : ''}
-            
+            Las categorías disponibles son:\n${categoryNames}
+            Hallazgos a categorizar:\n${transcript}
+            ${Object.keys(learningDictionary).length > 0 ? `Aquí hay ejemplos de hallazgos y cómo han sido categorizados previamente:\n${Object.entries(learningDictionary).map(([finding, categoryId]) => `"${finding}" => Categoría ${categoryId}`).join('\n')}` : ''}
             Por favor, asigna cada hallazgo a la categoría más apropiada. Devuelve un JSON con la siguiente estructura:
-            {
-              "1": ["hallazgo 1", "hallazgo 2"],
-              "2": ["hallazgo 3"],
-              ...
-            }
+            { "1": ["hallazgo 1", "hallazgo 2"], "2": ["hallazgo 3"], ... }
             Donde las claves son los números de las categorías y los valores son arrays de hallazgos asignados a esas categorías.
             Incluye solo las categorías disponibles que tienen hallazgos. 
             Si un hallazgo no corresponde claramente a ninguna categoría anatómica, asígnalo a la categoría 13 "Otros hallazgos".
             Intenta utilizar los ejemplos previos para categorizar hallazgos similares de manera consistente.
-            Devuelve SOLO el objeto JSON, sin texto adicional.
-            `;
+            Devuelve SOLO el objeto JSON, sin texto adicional.`;
             
             try {
                 const response = await queryGeminiAPI(prompt);
-                
-                if (!response) {
-                    throw new Error('No se recibió respuesta de la API');
-                }
+                if (!response) throw new Error('No se recibió respuesta de la API');
                 
                 let jsonStr = response.trim();
-                
                 if (jsonStr.includes('{') && jsonStr.includes('}')) {
-                    const startIndex = jsonStr.indexOf('{');
-                    const endIndex = jsonStr.lastIndexOf('}') + 1;
-                    jsonStr = jsonStr.substring(startIndex, endIndex);
+                    jsonStr = jsonStr.substring(jsonStr.indexOf('{'), jsonStr.lastIndexOf('}') + 1);
                 }
                 
                 try {
                     categorizedFindings = JSON.parse(jsonStr);
                     displayCategorizedFindings();
                 } catch (parseError) {
-                    console.error('Error al parsear JSON:', parseError);
-                    console.error('JSON recibido:', jsonStr);
-                    
+                    console.error('Error al parsear JSON:', parseError, 'JSON:', jsonStr);
                     const alternativeJson = {};
                     const categoryRegex = /"(\d+)":\s*\[(.*?)\]/gs;
                     let match;
-                    
                     while ((match = categoryRegex.exec(jsonStr)) !== null) {
-                        const categoryId = match[1];
-                        const findingsStr = match[2];
-                        
-                        const findingsRegex = /"(.*?)"/g;
                         const findings = [];
+                        const findingsRegex = /"(.*?)"/g;
                         let findingMatch;
-                        
-                        while ((findingMatch = findingsRegex.exec(findingsStr)) !== null) {
-                            findings.push(findingMatch[1]);
-                        }
-                        
-                        if (findings.length > 0) {
-                            alternativeJson[categoryId] = findings;
-                        }
+                        while ((findingMatch = findingsRegex.exec(match[2])) !== null) findings.push(findingMatch[1]);
+                        if (findings.length > 0) alternativeJson[match[1]] = findings;
                     }
-                    
                     if (Object.keys(alternativeJson).length > 0) {
                         categorizedFindings = alternativeJson;
                         displayCategorizedFindings();
@@ -714,14 +748,12 @@
             }
         }
 
-        // Generar informe completo
         async function generateCompleteReport() {
-            const finalReport = document.getElementById('final-report');
+            const finalReportEl = document.getElementById('final-report'); // Renamed
             const reportLoading = document.getElementById('report-loading');
             const imagingTechniqueSelect = document.getElementById('imaging-technique');
             const tacScopeSelect = document.getElementById('tac-scope');
             const rmTypeSelect = document.getElementById('rm-type');
-            const contrastUseSelect = document.getElementById('contrast-use');
             
             if (Object.keys(categorizedFindings).length === 0) {
                 alert('Primero debe categorizar los hallazgos.');
@@ -729,205 +761,109 @@
             }
             
             reportLoading.style.display = 'block';
-            finalReport.textContent = 'Generando informe...';
+            finalReportEl.textContent = 'Generando informe...';
             
             const technique = imagingTechniqueSelect.value.toUpperCase();
             const tacScope = technique === 'TAC' ? tacScopeSelect.value : null;
             const rmType = technique === 'RM' ? rmTypeSelect.value : null;
-            const contrastUse = technique === 'TAC' ? contrastUseSelect.value : null;
-            
-            let phases = [];
-            if (technique === 'TAC' && contrastUse === 'con') {
-                phases = Array.from(document.querySelectorAll('input[name="phase"]:checked'))
-                    .map(checkbox => checkbox.value);
-            }
-            
             let fullReport = '';
-            
-            // Asegurarse de que availableCategories esté definido
             const availableCategories = window.availableCategories || [];
             
             for (const category of anatomicalCategories) {
                 const categoryId = category.id.toString();
-                
-                if (!availableCategories.includes(category.id)) {
-                    continue;
-                }
+                if (!availableCategories.includes(category.id)) continue;
                 
                 const findings = categorizedFindings[categoryId] || [];
-                
-                const prompt = `
-                ${categoryPrompts[categoryId]}
-                
-                Técnica de imagen: ${technique}${tacScope ? ` (${tacScope})` : ''}
-                
-                Hallazgos encontrados: ${findings.length > 0 ? findings.join('. ') : 'Ninguno'}
-                
-                Redacta un párrafo conciso y profesional, usando terminología radiológica adecuada específica para ${technique}. 
-                MUY IMPORTANTE: NO menciones la técnica de imagen (TAC, RM, eco, etc.) en tu descripción de hallazgos.
-                `;
+                const prompt = `${categoryPrompts[categoryId]}\nTécnica de imagen: ${technique}${tacScope ? ` (${tacScope})` : ''}\nHallazgos encontrados: ${findings.length > 0 ? findings.join('. ') : 'Ninguno'}\nRedacta un párrafo conciso y profesional, usando terminología radiológica adecuada específica para ${technique}. MUY IMPORTANTE: NO menciones la técnica de imagen (TAC, RM, eco, etc.) en tu descripción de hallazgos.`;
                 
                 try {
                     const sectionReport = await queryGeminiAPI(prompt);
-                    if (sectionReport) {
-                        fullReport += `${sectionReport.trim()}\n`;
-                    }
+                    if (sectionReport) fullReport += `${sectionReport.trim()}\n`;
                 } catch (error) {
-                    console.error(`Error al generar informe para categoría ${categoryId}:`, error);
+                    console.error(`Error generando para cat ${categoryId}:`, error);
                     fullReport += `Error al generar esta sección.\n`;
                 }
             }
             
             try {
                 const allFindings = [];
-                
                 for (const categoryId in categorizedFindings) {
                     if (availableCategories.includes(parseInt(categoryId))) {
                         allFindings.push(...categorizedFindings[categoryId]);
                     }
                 }
                 
-                const conclusionPrompt = `
-                Técnica de imagen: ${technique}${tacScope ? ` (${tacScope})` : ''}${rmType ? ` (${rmType})` : ''}
-                
-                Basado en estos hallazgos radiológicos exactos:
-                ${allFindings.join('. ')}
-                
-                Genera una conclusión muy concisa (máximo 2-3 líneas) que describa SOLO los 2-3 hallazgos más relevantes o significativos. 
-                Para hallazgos menores adicionales, sustituye todos ellos por la frase "Ver informe descriptivo."
-                Limítate a los datos proporcionados, sin añadir interpretaciones o elaboraciones creativas.
-                MUY IMPORTANTE: NO menciones la técnica de imagen (TAC, RM, eco, etc.) en tu conclusión.
-                Si no hay hallazgos significativos, devuelve EXACTAMENTE: "No se observan alteraciones radiológicas significativas."
-                `;
-                
+                const conclusionPrompt = `Técnica de imagen: ${technique}${tacScope ? ` (${tacScope})` : ''}${rmType ? ` (${rmType})` : ''}\nBasado en estos hallazgos radiológicos exactos:\n${allFindings.join('. ')}\nGenera una conclusión muy concisa (máximo 2-3 líneas) que describa SOLO los 2-3 hallazgos más relevantes o significativos. Para hallazgos menores adicionales, sustituye todos ellos por la frase "Ver informe descriptivo." Limítate a los datos proporcionados, sin añadir interpretaciones o elaboraciones creativas. MUY IMPORTANTE: NO menciones la técnica de imagen (TAC, RM, eco, etc.) en tu conclusión. Si no hay hallazgos significativos, devuelve EXACTAMENTE: "No se observan alteraciones radiológicas significativas."`;
                 const conclusion = await queryGeminiAPI(conclusionPrompt);
-                if (conclusion) {
-                    fullReport += `\n${conclusion.trim()}`;
-                }
+                if (conclusion) fullReport += `\n${conclusion.trim()}`;
             } catch (error) {
                 console.error('Error al generar conclusión:', error);
                 fullReport += '\nError al generar conclusión.';
             }
             
-            finalReport.textContent = fullReport;
+            finalReportEl.textContent = fullReport;
             reportLoading.style.display = 'none';
         }
 
-        // Nueva función para enseñar a la app dónde ubicar un hallazgo
         function teachFindingCategorization(finding, categoryId) {
-            // Cargar diccionario de aprendizaje
             let learningDictionary = JSON.parse(localStorage.getItem('findingsLearningDictionary')) || {};
-            
-            // Guardar o actualizar la categorización
             learningDictionary[finding] = categoryId;
-            
-            // Guardar en localStorage
             localStorage.setItem('findingsLearningDictionary', JSON.stringify(learningDictionary));
-            
-            // Notificar al usuario
             alert(`La app ha aprendido que "${finding}" pertenece a la categoría "${anatomicalCategories.find(cat => cat.id === parseInt(categoryId)).name}"`);
         }
 
         /*********************
          * UI FUNCTIONS
          *********************/
-        // Mostrar hallazgos categorizados
         function displayCategorizedFindings() {
-            const categorizedContent = document.getElementById('categorized-content');
-            categorizedContent.innerHTML = '';
-            
+            const categorizedContentEl = document.getElementById('categorized-content');
+            categorizedContentEl.innerHTML = '';
             if (Object.keys(categorizedFindings).length === 0) {
-                categorizedContent.innerHTML = '<p>No hay hallazgos categorizados.</p>';
+                categorizedContentEl.innerHTML = '<p>No hay hallazgos categorizados.</p>';
                 return;
             }
-            
-            // Asegurarse de que availableCategories esté definido
             const availableCategories = window.availableCategories || [];
             
             for (const categoryId in categorizedFindings) {
-                // Solo mostrar categorías disponibles según la técnica y alcance seleccionados
                 if (availableCategories.includes(parseInt(categoryId)) && categorizedFindings[categoryId].length > 0) {
                     const category = anatomicalCategories.find(cat => cat.id === parseInt(categoryId));
-                    
                     if (category) {
                         const categoryDiv = document.createElement('div');
                         categoryDiv.className = 'category';
-                        
                         let findingsHtml = '';
-                        
-                        // Generar HTML para cada hallazgo, añadiendo controles para reasignar si es "Otros hallazgos"
                         for (const finding of categorizedFindings[categoryId]) {
                             if (parseInt(categoryId) === 13) {
-                                // Para "Otros hallazgos", mostrar selector para reasignar
-                                findingsHtml += `
-                                    <li class="finding-item">
-                                        <div class="finding-text">${finding}</div>
-                                        <div class="finding-controls">
-                                            <select class="category-reassign" data-finding="${finding}">
-                                                <option value="">Reasignar a...</option>
-                                                ${anatomicalCategories.filter(cat => cat.id !== 13).map(cat => 
-                                                    `<option value="${cat.id}">${cat.name}</option>`
-                                                ).join('')}
-                                            </select>
-                                        </div>
-                                    </li>
-                                `;
+                                findingsHtml += `<li class="finding-item"><div class="finding-text">${finding}</div><div class="finding-controls"><select class="category-reassign" data-finding="${finding}"><option value="">Reasignar a...</option>${anatomicalCategories.filter(cat => cat.id !== 13).map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('')}</select></div></li>`;
                             } else {
                                 findingsHtml += `<li>${finding}</li>`;
                             }
                         }
-                        
-                        categoryDiv.innerHTML = `
-                            <h3>${category.name}</h3>
-                            <div class="category-content">
-                                <ul>${findingsHtml}</ul>
-                            </div>
-                        `;
-                        
-                        categorizedContent.appendChild(categoryDiv);
+                        categoryDiv.innerHTML = `<h3>${category.name}</h3><div class="category-content"><ul>${findingsHtml}</ul></div>`;
+                        categorizedContentEl.appendChild(categoryDiv);
                     }
                 }
             }
             
-            // Añadir listeners para los selectores de reasignación
             document.querySelectorAll('.category-reassign').forEach(select => {
                 select.addEventListener('change', (e) => {
                     const finding = e.target.dataset.finding;
                     const newCategoryId = e.target.value;
-                    
                     if (newCategoryId) {
-                        // Enseñar a la app dónde ubicar este hallazgo
                         teachFindingCategorization(finding, newCategoryId);
-                        
-                        // Mover el hallazgo a la nueva categoría
-                        if (!categorizedFindings[newCategoryId]) {
-                            categorizedFindings[newCategoryId] = [];
-                        }
-                        
-                        // Añadir a la nueva categoría
+                        if (!categorizedFindings[newCategoryId]) categorizedFindings[newCategoryId] = [];
                         categorizedFindings[newCategoryId].push(finding);
-                        
-                        // Quitar de "Otros hallazgos"
                         categorizedFindings[13] = categorizedFindings[13].filter(f => f !== finding);
-                        
-                        // Si "Otros hallazgos" queda vacío, eliminar la categoría
-                        if (categorizedFindings[13].length === 0) {
-                            delete categorizedFindings[13];
-                        }
-                        
-                        // Actualizar la visualización
+                        if (categorizedFindings[13].length === 0) delete categorizedFindings[13];
                         displayCategorizedFindings();
                     }
                 });
             });
         }
 
-        // Definición de categorías por región
-        const thoracicCategories = [0, 1, 2, 3, 4]; // IDs de categorías torácicas, añadido tiroides (0)
-        const abdominalCategories = [5, 6, 7, 8, 9, 10, 11, 12]; // IDs de categorías abdominales
-        const otherCategories = [13]; // Categoría "Otros hallazgos"
+        const thoracicCategories = [0, 1, 2, 3, 4];
+        const abdominalCategories = [5, 6, 7, 8, 9, 10, 11, 12];
+        const otherCategories = [13];
 
-        // Función para actualizar las categorías disponibles
         function updateAvailableCategories() {
             const imagingTechniqueSelect = document.getElementById('imaging-technique');
             const tacScopeSelect = document.getElementById('tac-scope');
@@ -939,159 +875,91 @@
             const technique = imagingTechniqueSelect.value;
             const tacScope = tacScopeSelect.value;
             
-            // Mostrar/ocultar contenedores según la técnica
+            tacScopeContainer.style.display = technique === 'tac' ? 'flex' : 'none';
+            rmTypeContainer.style.display = technique === 'rm' ? 'flex' : 'none';
+            contrastContainer.style.display = technique === 'tac' ? 'flex' : 'none'; // Show for TAC
+            phaseContainer.style.display = (technique === 'tac' && document.getElementById('contrast-use').value === 'con') ? 'flex' : 'none';
+
+
             if (technique === 'tac') {
-                tacScopeContainer.style.display = 'flex';
-                rmTypeContainer.style.display = 'none';
-                contrastContainer.style.display = 'flex';
-                
-                if (tacScope === 'toracoabdominal') {
-                    window.availableCategories = [...thoracicCategories, ...abdominalCategories, ...otherCategories];
-                } else if (tacScope === 'torax') {
-                    window.availableCategories = [...thoracicCategories, ...otherCategories];
-                } else if (tacScope === 'abdomen') {
-                    window.availableCategories = [...abdominalCategories, ...otherCategories];
-                }
-            } else if (technique === 'rm') {
-                tacScopeContainer.style.display = 'none';
-                rmTypeContainer.style.display = 'flex';
-                contrastContainer.style.display = 'none';
-                phaseContainer.style.display = 'none';
-                window.availableCategories = [...abdominalCategories, ...otherCategories];
-            } else {
-                // eco
-                tacScopeContainer.style.display = 'none';
-                rmTypeContainer.style.display = 'none';
-                contrastContainer.style.display = 'none';
-                phaseContainer.style.display = 'none';
+                if (tacScope === 'toracoabdominal') window.availableCategories = [...thoracicCategories, ...abdominalCategories, ...otherCategories];
+                else if (tacScope === 'torax') window.availableCategories = [...thoracicCategories, ...otherCategories];
+                else if (tacScope === 'abdomen') window.availableCategories = [...abdominalCategories, ...otherCategories];
+            } else if (technique === 'rm' || technique === 'eco') { // RM and Eco use abdominal + others
                 window.availableCategories = [...abdominalCategories, ...otherCategories];
             }
             
-            // Limpiar hallazgos previos
-            const categorizedContent = document.getElementById('categorized-content');
-            categorizedContent.innerHTML = '';
+            document.getElementById('categorized-content').innerHTML = '';
             categorizedFindings = {};
-            
-            // Actualizar técnica
             updateTechniqueDescription();
         }
 
-        // Función para mostrar/ocultar opciones de fase según contraste
         function updateContrastOptions() {
             const imagingTechniqueSelect = document.getElementById('imaging-technique');
             const contrastUseSelect = document.getElementById('contrast-use');
             const phaseContainer = document.getElementById('phase-container');
             
-            const technique = imagingTechniqueSelect.value;
-            const contrastUse = contrastUseSelect.value;
-            
-            if (technique === 'tac' && contrastUse === 'con') {
+            if (imagingTechniqueSelect.value === 'tac' && contrastUseSelect.value === 'con') {
                 phaseContainer.style.display = 'flex';
             } else {
                 phaseContainer.style.display = 'none';
-                // Desmarcar checkboxes
-                document.querySelectorAll('input[name="phase"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
+                document.querySelectorAll('input[name="phase"]').forEach(cb => cb.checked = false);
             }
-            
-            // Actualizar técnica
             updateTechniqueDescription();
         }
 
-        // Función para generar y actualizar descripción de técnica
         function updateTechniqueDescription() {
             const imagingTechniqueSelect = document.getElementById('imaging-technique');
             const tacScopeSelect = document.getElementById('tac-scope');
             const rmTypeSelect = document.getElementById('rm-type');
             const contrastUseSelect = document.getElementById('contrast-use');
-            const techniqueText = document.getElementById('technique-text');
-            const techniqueDescription = document.getElementById('technique-description');
+            const techniqueTextEl = document.getElementById('technique-text'); // Renamed
+            const techniqueDescriptionEl = document.getElementById('technique-description'); // Renamed
             
             const technique = imagingTechniqueSelect.value;
             
-            // Ocultar descripción para técnicas no TAC o RM
             if (technique !== 'tac' && technique !== 'rm') {
-                techniqueDescription.style.display = 'none';
+                techniqueDescriptionEl.style.display = 'none';
                 return;
             }
+            techniqueDescriptionEl.style.display = 'block';
             
-            techniqueDescription.style.display = 'block';
-            
+            let description = "";
             if (technique === 'tac') {
-                const tacScope = tacScopeSelect.value;
-                const contrastUse = contrastUseSelect.value;
-                
-                let scopeText = '';
-                switch(tacScope) {
-                    case 'toracoabdominal': scopeText = 'toracoabdominal'; break;
-                    case 'torax': scopeText = 'torácica'; break;
-                    case 'abdomen': scopeText = 'abdominal'; break;
-                }
-                
-                let contrastText = contrastUse === 'con' ? 'tras la' : 'sin la';
-                
-                let description = `Se realiza exploración TAC ${scopeText} ${contrastText} administración de contraste endovenoso`;
-                
-                // Añadir fase si hay contraste
-                if (contrastUse === 'con') {
-                    const checkedPhases = Array.from(document.querySelectorAll('input[name="phase"]:checked'))
-                        .map(checkbox => checkbox.value);
-                    
-                    if (checkedPhases.length > 0) {
-                        let phaseText = '';
-                        
-                        if (checkedPhases.length === 1) {
-                            phaseText = checkedPhases[0] === 'arterial' ? 'arterial' : 
-                                        checkedPhases[0] === 'portal' ? 'portal' : 'tardía';
-                        } else if (checkedPhases.length === 2) {
-                            const phases = checkedPhases.map(phase => {
-                                return phase === 'arterial' ? 'arterial' : 
-                                       phase === 'portal' ? 'portal' : 'tardía';
-                            });
-                            phaseText = `${phases[0]} y ${phases[1]}`;
-                        } else if (checkedPhases.length === 3) {
-                            phaseText = 'arterial, portal y tardía';
-                        }
-                        
+                const scope = tacScopeSelect.value === 'toracoabdominal' ? 'toracoabdominal' : tacScopeSelect.value === 'torax' ? 'torácica' : 'abdominal';
+                const contrast = contrastUseSelect.value === 'con' ? 'tras la' : 'sin la';
+                description = `Se realiza exploración TAC ${scope} ${contrast} administración de contraste endovenoso`;
+                if (contrastUseSelect.value === 'con') {
+                    const phases = Array.from(document.querySelectorAll('input[name="phase"]:checked')).map(cb => cb.value);
+                    if (phases.length > 0) {
+                        let phaseText = phases.map(p => p === 'arterial' ? 'arterial' : p === 'portal' ? 'portal' : 'tardía').join(', ');
+                        if (phases.length > 1) phaseText = phaseText.replace(/,([^,]*)$/, ' y$1'); // Correct grammar for multiple phases
                         description += ` con adquisición de imágenes en fase ${phaseText}`;
                     }
                 }
-                
-                techniqueText.textContent = description + '.';
+                description += '.';
             } else if (technique === 'rm') {
-                const rmType = rmTypeSelect.value;
-                let description = '';
-                
-                switch(rmType) {
-                    case 'hepatica':
-                        description = 'Se realiza estudio de RM hepática con secuencias ponderadas en T1, T2, difusión y posterior a la administración de contraste hepatoespecífico.';
-                        break;
-                    case 'colangio':
-                        description = 'Se realiza estudio de ColangioRM con secuencias ponderadas en T2 y secuencias MRCP (colangiopancreatografía por resonancia magnética).';
-                        break;
-                    case 'pelvis-neo':
-                        description = 'Se realiza estudio de RM pélvica para valoración de neoplasia con secuencias ponderadas en T1, T2, difusión y posterior a la administración de contraste intravenoso.';
-                        break;
-                    case 'pelvis-fist':
-                        description = 'Se realiza estudio de RM pélvica para valoración de fístulas perianales con secuencias ponderadas en T1, T2, STIR y posterior a la administración de contraste intravenoso.';
-                        break;
-                    case 'entero':
-                        description = 'Se realiza estudio de EnteroRM con secuencias ponderadas en T1, T2, difusión y posterior a la administración de contraste intravenoso tras la adecuada distensión de asas intestinales mediante contraste oral.';
-                        break;
+                switch(rmTypeSelect.value) {
+                    case 'hepatica': description = 'Se realiza estudio de RM hepática con secuencias ponderadas en T1, T2, difusión y posterior a la administración de contraste hepatoespecífico.'; break;
+                    case 'colangio': description = 'Se realiza estudio de ColangioRM con secuencias ponderadas en T2 y secuencias MRCP (colangiopancreatografía por resonancia magnética).'; break;
+                    case 'pelvis-neo': description = 'Se realiza estudio de RM pélvica para valoración de neoplasia con secuencias ponderadas en T1, T2, difusión y posterior a la administración de contraste intravenoso.'; break;
+                    case 'pelvis-fist': description = 'Se realiza estudio de RM pélvica para valoración de fístulas perianales con secuencias ponderadas en T1, T2, STIR y posterior a la administración de contraste intravenoso.'; break;
+                    case 'entero': description = 'Se realiza estudio de EnteroRM con secuencias ponderadas en T1, T2, difusión y posterior a la administración de contraste intravenoso tras la adecuada distensión de asas intestinales mediante contraste oral.'; break;
                 }
-                
-                techniqueText.textContent = description;
             }
+            techniqueTextEl.textContent = description;
         }
 
         /*********************
          * EVENT LISTENERS
          *********************/
         document.addEventListener('DOMContentLoaded', () => {
-            // Elementos DOM
+            // Apply saved theme first
+            const savedTheme = localStorage.getItem('themePreferenceJuanizador') || 'light';
+            applyThemeJuanizador(savedTheme);
+
             const microphoneBtn = document.getElementById('microphone-btn');
-            transcriptArea = document.getElementById('transcript'); // Assign to global
+            transcriptArea = document.getElementById('transcript');
             const categorizeBtn = document.getElementById('categorize-btn');
             const clearBtn = document.getElementById('clear-btn');
             const generateReportBtn = document.getElementById('generate-report-btn');
@@ -1100,37 +968,25 @@
             const tacScopeSelect = document.getElementById('tac-scope');
             const rmTypeSelect = document.getElementById('rm-type');
             const contrastUseSelect = document.getElementById('contrast-use');
-            const techniqueDescription = document.getElementById('technique-description');
-            const backToDictationBtn = document.getElementById('backToDictationBtn'); // NEW
+            const techniqueDescriptionEl = document.getElementById('technique-description');
+            const backToDictationBtn = document.getElementById('backToDictationBtn');
 
-            // Load text from index.html if available
             const inputTextFromIndex = localStorage.getItem('juanizadorInputText');
             if (inputTextFromIndex) {
                 transcriptArea.value = inputTextFromIndex;
-                localStorage.removeItem('juanizadorInputText'); // Clean up
+                localStorage.removeItem('juanizadorInputText'); 
             }
             
-            // Inicializar reconocimiento de voz
             initSpeechRecognition();
+            updateAvailableCategories(); // This also calls updateTechniqueDescription
+            // updateTechniqueDescription(); // Call explicitly to set initial state if needed
             
-            // Inicializar categorías disponibles
-            updateAvailableCategories();
-            
-            // Inicialmente ocultar descripciones de técnica if not TAC or RM
-            updateTechniqueDescription(); // Call this to set initial visibility
-
-            // Listeners para los selectores de técnica
             imagingTechniqueSelect.addEventListener('change', updateAvailableCategories);
-            tacScopeSelect.addEventListener('change', updateAvailableCategories);
+            tacScopeSelect.addEventListener('change', updateAvailableCategories); // This will also update technique description
             rmTypeSelect.addEventListener('change', updateTechniqueDescription);
-            contrastUseSelect.addEventListener('change', updateContrastOptions);
+            contrastUseSelect.addEventListener('change', updateContrastOptions); // This will also update technique description
+            document.querySelectorAll('input[name="phase"]').forEach(cb => cb.addEventListener('change', updateTechniqueDescription));
             
-            // Listener para checkboxes de fase
-            document.querySelectorAll('input[name="phase"]').forEach(checkbox => {
-                checkbox.addEventListener('change', updateTechniqueDescription);
-            });
-            
-            // Configurar event listeners
             microphoneBtn.addEventListener('click', toggleRecording);
             categorizeBtn.addEventListener('click', () => categorizeFindings(window.availableCategories));
             
@@ -1146,7 +1002,7 @@
                 const techniqueDescText = document.getElementById('technique-text').textContent;
                 const reportText = document.getElementById('final-report').textContent;
                 let fullText = "";
-                if (techniqueDescText.trim() && techniqueDescription.style.display !== 'none') {
+                if (techniqueDescText.trim() && techniqueDescriptionEl.style.display !== 'none') {
                     fullText += techniqueDescText + "\n\n";
                 }
                 fullText += reportText;
@@ -1155,7 +1011,6 @@
                     .catch(err => console.error('Error al copiar: ', err));
             });
 
-            // Listener for "Volver a dictado" button
             if (backToDictationBtn) { 
                 backToDictationBtn.addEventListener('click', () => {
                     window.location.href = 'index.html';
